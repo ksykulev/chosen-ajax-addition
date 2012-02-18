@@ -69,12 +69,12 @@ Expected Data Formats
 Ajax chosen requires the server return data to be in a somewhat specific format for it to output the select options.
 
 It can be an array of kv pairs:
-```javascript
+```
 	[{id:'', text:''}...]
 ```
 
 It can be a hash of kv pairs
-```javascript
+```
 	{'id':'text'...}
 ```
 
