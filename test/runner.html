@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" href="../vendor/mocha.css">
+		<link rel="stylesheet" href="../vendor/chosen.css">
+		<style>
+			
+		</style>
+	</head>
+	<body>
+		<div id="mocha"></div>
+
+		<div id="test-space">
+		</div>
+		<select id="test-select" name="test-select">
+			<option value=""></option>
+		</select>
+
+		<script src="../vendor/jquery-1.7.1.min.js"></script>
+		<script src="../vendor/mocha.js"></script>
+		<script src="../vendor/chai.js"></script>
+		<script src="../vendor/json2.js"></script>
+		<script src="../vendor/sinon-1.3.1.js"></script>
+		<script src="../vendor/chosen.jquery-0.9.5.js"></script>
+		<script src="../chosen.ajaxaddition.jquery.js"></script>
+
+		<script>
+			mocha.setup('bdd');
+			var expect = chai.expect;
+			function err(fn, msg){
+				try {
+					fn();
+					chai.fail('expected an error');
+				} catch (err) {
+					expect(msg).to.equal(err.message);
+				}
+			}
+		</script>
+		<script src="main.js"></script>
+		<script>
+			onload = function(){
+				var runner = mocha.run().globals(['setTimeout', 'setInterval', 'clearTimeout', 'clearInterval']);
+			}
+		</script>
+	</body>
+</html>
