@@ -8,6 +8,7 @@ Although it doesn't fit with the progressive enhancement ideals of chosen.. it w
 Warning
 -------
 Known issues:
+
 * This plugin is known to do double work. If the user types a few letters, pauses, ajax fires off and returns results. Then the user types more, the chosen plugin will filter the results via JS as well as the server from the ajax call. 
 * User types, ajax 1 fires, users deletes, ajax 1 finishes and ajax 2 fires off. This sometimes leaves the input in an inconsistent state.
 
@@ -45,41 +46,53 @@ $('select').ajaxChosen({
 });
 </script>
 ```
+
 processItems -> this function gets called on the data that gets returned from the server, so you can format your results before ajax chosen outputs the select options. It is expected to return an array of key-value pairs or a hash of key value pairs. See below for details.
+
 	default: nothing
 
 useAjax -> this function will be executed on key up to determine whether to use the ajax functionality or not. It must return true or false.
+
 	default: true
 
 generateUrl -> this function will get executed right before the ajax call is fired. It will use the return value of this function as the url option for the ajax call.
+
 	default: nothing, uses the url specified in the ajax parameters
 
 loadingImg -> path to the image you wish to show when the ajax call is processing
+
 	default: '/img/loading.gif'
+
 
 Expected Data Formats
 ---------------------
 Ajax chosen requires the server return data to be in a somewhat specific format for it to output the select options.
+
 It can be an array of kv pairs:
 ```javascript
 	[{id:'', text:''}...]
 ```
+
 It can be a hash of kv pairs
 ```javascript
 	{'id':'text'...}
 ```
 
 Another thing it expects is the query to be passed back in the result set. For instance:
+
 ```javascript
 	{q:'banana', results:[{id:'', text:''}]}
 ```
+
+
 Which brings me to my next point. If no processItems function is specified, ajax chosen will search for a results key in the data hash. If it is not found it will give you an error.
 So some example formats that will work without a processItems function:
+
 ```javascript
 	{q:'banana', results:[{id:'', text:''}]}
-
 	{q:'banana', results:{id:text,id:text...}}
 ```
+
 
 Running the tests
 -----------------
