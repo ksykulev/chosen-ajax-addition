@@ -23,8 +23,11 @@ Example Usage
 </script>
 ```
 The method signature is:
+
 ajaxOptions - options for $.ajax
+
 ajaxChosenOptions - options for the ajax chosen plugin
+
 chosenOptions - options to be proxied to the chosen plugin. ex: {no_results_text: 'shit out of luck'}
 
 ```javascript
@@ -50,21 +53,16 @@ $('select').ajaxChosen({
 What do these options mean:
 
 __processItems__ -> this function gets called on the data that gets returned from the server, so you can format your results before ajax chosen outputs the select options. It is expected to return an array of key-value pairs or a hash of key value pairs. See below for details.
-
 __default__: nothing
 
 __useAjax__ -> this function will be executed on key up to determine whether to use the ajax functionality or not. It must return true or false.
-
 __default__: true
 
 __generateUrl__ -> this function will get executed right before the ajax call is fired. It will use the return value of this function as the url option for the ajax call.
-
 __default__: nothing, uses the url specified in the ajax parameters
 
 __loadingImg__ -> path to the image you wish to show when the ajax call is processing
-
 __default__: '/img/loading.gif'
-
 
 Expected Data Formats
 ---------------------
