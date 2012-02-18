@@ -47,20 +47,20 @@ $('select').ajaxChosen({
 </script>
 ```
 
-processItems -> this function gets called on the data that gets returned from the server, so you can format your results before ajax chosen outputs the select options. It is expected to return an array of key-value pairs or a hash of key value pairs. See below for details.
-
+	processItems -> this function gets called on the data that gets returned from the server, so you can format your results before ajax chosen outputs the select options. It is expected to return an array of key-value pairs or a hash of key value pairs. See below for details.
+	
 	default: nothing
 
-useAjax -> this function will be executed on key up to determine whether to use the ajax functionality or not. It must return true or false.
-
+	useAjax -> this function will be executed on key up to determine whether to use the ajax functionality or not. It must return true or false.
+	
 	default: true
 
-generateUrl -> this function will get executed right before the ajax call is fired. It will use the return value of this function as the url option for the ajax call.
-
+	generateUrl -> this function will get executed right before the ajax call is fired. It will use the return value of this function as the url option for the ajax call.
+	
 	default: nothing, uses the url specified in the ajax parameters
 
-loadingImg -> path to the image you wish to show when the ajax call is processing
-
+	loadingImg -> path to the image you wish to show when the ajax call is processing
+	
 	default: '/img/loading.gif'
 
 
@@ -101,10 +101,15 @@ Just load up runner.html in your browser
 Vendor
 ------
 [jquery](http://jquery.com/)
+
 [chosen](https://github.com/harvesthq/chosen) - base plugin
+
 [mocha](http://visionmedia.github.com/mocha/) - test framework
+
 [chai](http://chaijs.com/) - browser expectations for mocha
+
 [sinon](http://sinonjs.org/) - spies, stubs, and mocks
+
 [json2](https://github.com/douglascrockford/JSON-js) - JSON.stringify
 
 
