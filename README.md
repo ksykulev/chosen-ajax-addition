@@ -4,6 +4,7 @@ We use [chosen](https://github.com/harvesthq/chosen) at work.
 Works great, but one day we needed it to do some server side calls.
 So I quickly wrapped the plugin with some jQuery magic and chosen ajax addition was born.
 Although it doesn't fit with the progressive enhancement ideals of chosen.. it was born quickly and it does what we need it to do for the time being.
+PS I have only wrote/tested this for a select box with options. It definitely not guaranteed to work with the other chosen variations.
 
 Warning
 -------
@@ -96,7 +97,7 @@ So some example formats that will work without a processItems function:
 
 Running the tests
 -----------------
-Just load up runner.html in your browser
+Just load up runner.html in your browser.
 
 Vendor
 ------
