@@ -19,9 +19,6 @@
 		chosen = select.next();
 		input = $('input', chosen);
 		inputBG = input.css('background');
-		//right key, for highlight options after ajax is performed
-		keyRight = $.Event('keyup');
-		keyRight.which = 39;
 		//copy out success callback
 		if ('success' in ajaxOptions && $.isFunction(ajaxOptions.success)) {
 			callback = ajaxOptions.success;
@@ -56,6 +53,9 @@
 			}
 			//update chosen
 			select.trigger("liszt:updated");
+			//right key, for highlight options after ajax is performed
+			keyRight = $.Event('keyup');
+			keyRight.which = 39;
 			//highlight
 			input.val(data.q).trigger(keyRight).css({background: inputBG});
 			$('> a span', chosen).text(select.attr('placeholder') || '');
