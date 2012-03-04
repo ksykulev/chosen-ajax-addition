@@ -39,7 +39,7 @@
 				return false;
 			}
 			//.chzn-choices is only present with multi-selects
-			selected = $('.chzn-choices li.search-choice', chosen);
+			selected = $('.chzn-choices li.search-choice', chosen).clone(true);
 			$('option', select).remove();
 
 			$('<option value=""/>').appendTo(select);
