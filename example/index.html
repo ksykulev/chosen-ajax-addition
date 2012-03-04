@@ -3,24 +3,38 @@
 	<head>
 		<link type="text/css" rel="stylesheet" media="screen" href="chosen.css">
 		<style>
-			#states-select { width: 150px; }
+			#states-select, #states-multi-select { width: 150px; }
 		</style>
 	</head>
 	<body>
+		<p>Type one of the 50 states to begin</p>
+		<h2>Single Select</h2>
 		<select id="states-select" name="states-select">
 			<option value=""></option>
 		</select>
+		<h2>Multi Select</h2>
+		<select id="states-multi-select" name="states-multi-select" multiple>
+			<option value=""></option>
+		</select>
+
 		<script type="text/javascript" src="jquery-1.7.1.min.js"></script>
 		<script type="text/javascript" src="chosen.jquery-0.9.5.js"></script>
 		<script type="text/javascript" src="chosen.ajaxaddition.jquery.js"></script>
 		<script>
-                        $('select').ajaxChosen({
-                                dataType: 'json',
-                                type: 'POST',
-                                url:'search.php'
-                        },{
-                                loadingImg: 'loading.gif'
-                        });
-                </script>
+           $('#states-select').ajaxChosen({
+                   dataType: 'json',
+                   type: 'POST',
+                   url:'search.php'
+           },{
+                   loadingImg: 'loading.gif'
+           });
+           $('#states-multi-select').ajaxChosen({
+                   dataType: 'json',
+                   type: 'POST',
+                   url:'search.php'
+           },{
+                   loadingImg: 'loading.gif'
+           });
+    </script>
 	</body>
 </html>
