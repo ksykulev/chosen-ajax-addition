@@ -14,6 +14,11 @@ Known issues:
 * User types, ajax 1 fires, users deletes, ajax 1 finishes and ajax 2 fires off. This sometimes leaves the input in an inconsistent state.
 * On multi-select duplicate results may not be filter. Ex: If the user types 'United States' and selects United States, then types Japan and selects Japan. Typing United States again usually will have it filter from the result set, however it will appear in the result set.
 
+Critical Todos:
+
+* Make the .ajaxChosen support an array of selected elements (oops!)
+* On multiple selects make sure ids of search-choice are all unique to support proper deletes
+
 Example Usage
 -------------
 ```javascript
