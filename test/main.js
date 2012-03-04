@@ -448,5 +448,6 @@ describe('chosen.ajaxaddition', function(){
 				expect($(elem).text()).to.equal(expectedResults[i]);
 			});
 		});
+		it('should assign unique ids to all cloned search choices')
 	});
 });

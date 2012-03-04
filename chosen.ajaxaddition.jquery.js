@@ -61,8 +61,15 @@
 			keyRight.which = 39;
 			//highlight
 			input.val(data.q).trigger(keyRight).css({background: inputBG});
+			//remove previous choices
+			$('.chzn-choices li.search-choice', chosen).remove();
 			//add the previously selected choices for multi select
-			$('.chzn-choices', chosen).prepend(selected);
+			for(var i = selected.length - 1, elem; i >= 0; i--) {
+				elem = selected[i];
+				elem.id = elem.id.substring(0, elem.id.length - 1) + (i + 2);
+				$('a', elem).attr('rel', i + 2);
+				$('.chzn-choices', chosen).prepend(elem);
+			}
 			$('> a span', chosen).text(select.attr('placeholder') || '');
 
 			if (items.length > 0) {
