@@ -39,10 +39,11 @@
 				return false;
 			}
 			//.chzn-choices is only present with multi-selects
-			selected = $('.chzn-choices li.search-choice', chosen).clone(true);
+			selected = $('option:selected', select).not(':empty').clone().attr('selected', true);
 			$('option', select).remove();
 
 			$('<option value=""/>').appendTo(select);
+			selected.appendTo(select);
 			if ($.isArray(items)) {
 				//array of kv pairs [{id:'', text:''}...]
 				$.each(items, function (i, opt) {
@@ -61,15 +62,6 @@
 			keyRight.which = 39;
 			//highlight
 			input.val(data.q).trigger(keyRight).css({background: inputBG});
-			//remove previous choices
-			$('.chzn-choices li.search-choice', chosen).remove();
-			//add the previously selected choices for multi select
-			for(var i = selected.length - 1, elem; i >= 0; i--) {
-				elem = selected[i];
-				elem.id = elem.id.substring(0, elem.id.length - 1) + (i + 2);
-				$('a', elem).attr('rel', i + 2);
-				$('.chzn-choices', chosen).prepend(elem);
-			}
 			$('> a span', chosen).text(select.attr('placeholder') || '');
 
 			if (items.length > 0) {

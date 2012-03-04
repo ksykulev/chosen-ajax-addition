@@ -59,7 +59,7 @@ $states = array(
 
 $results = array();
 foreach($states as $i => $state){
-	if( stristr($state,$q) !== FALSE ){
+	if( stripos($state,$q) === 0 ){
 		$results[] = array('id' => $i, 'text' => $state);
 	}
 }

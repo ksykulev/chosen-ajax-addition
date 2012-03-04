@@ -383,7 +383,8 @@ describe('chosen.ajaxaddition', function(){
 			expect($._data( input[0], "events" )['keyup']).to.have.length(2);
 		});
 		it('should keep the options previously selected', function(){
-			var chosen,
+			var select,
+					chosen,
 					input,
 					key;
 			this.server = sinon.fakeServer.create();
@@ -393,11 +394,12 @@ describe('chosen.ajaxaddition', function(){
 				[200, { 'Content-Type': 'application/json' },
 				'{ "q": "banana", "results": [{"id":1, "text":"Chiquita"}]}']
 			);
-			chosen = $('select', space).ajaxChosen({
+			select = $('select', space).ajaxChosen({
 				dataType: 'json',
 				type: 'POST',
 				url: '/search'
-			},{}).next();
+			},{});
+			chosen = select.next();
 
 			chosen.trigger('click');
 			input = $('input', chosen).val('banan');
@@ -407,6 +409,8 @@ describe('chosen.ajaxaddition', function(){
 			this.clock.tick(750);
 			this.server.respond();
 
+			expect($('option',select)).to.have.length(2);//empty + 1 result
+			//not results in selected
 			expect($('.chzn-choices li.search-choice',chosen)).to.have.length(0);
 			//have the chiquita result
 			expect($('.chzn-results li', chosen).not('.no-results')).to.have.length(1);
@@ -415,6 +419,8 @@ describe('chosen.ajaxaddition', function(){
 			$('.chzn-results li',chosen).not('.no-results').eq(0).addClass('active-result');
 			$('.chzn-results li',chosen).not('.no-results').eq(0).trigger('mouseup');
 			//verify that it has been added to the selected list
+			expect($('option:selected',select)).to.have.length(1);
+			expect($('option:selected',select).text()).to.equal('Chiquita');
 			expect($('.chzn-choices li.search-choice',chosen)).to.have.length(1);
 			expect($('.chzn-choices li.search-choice',chosen).text()).to.equal('Chiquita');
 
@@ -432,22 +438,31 @@ describe('chosen.ajaxaddition', function(){
 			this.clock.tick(750);
 			this.server.respond();
 
+			//select box still has chiquita selected
+			expect($('option:selected',select)).to.have.length(1);
+			expect($('option:selected',select).text()).to.equal('Chiquita');
 			//have the original result
 			expect($('.chzn-choices li.search-choice',chosen)).to.have.length(1);
 			expect($('.chzn-choices li.search-choice',chosen).text()).to.equal('Chiquita');
-			//notice how we still only expect one result, chiquita should not be present
-			expect($('.chzn-results li', chosen).not('.no-results')).to.have.length(1);
-			expect($('.chzn-results li', chosen).not('.no-results').text()).to.equal('Ferrari');
+			//notice how we have two results and one is 'active-result' and the other is 'result-selected'
+			expect($('.chzn-results li.result-selected', chosen)).to.have.length(1);
+			expect($('.chzn-results li.result-selected', chosen).text()).to.equal('Chiquita');
+			expect($('.chzn-results li.active-result', chosen).not('.no-results')).to.have.length(1);
+			expect($('.chzn-results li.active-result', chosen).not('.no-results').text()).to.equal('Ferrari');
 			//click on result to add to selected items
-			$('.chzn-results li', chosen).not('.no-results').eq(0).addClass('active-result');
-			$('.chzn-results li', chosen).not('.no-results').eq(0).trigger('mouseup');
+			$('.chzn-results li.active-result', chosen).not('.no-results').eq(0).addClass('active-result');
+			$('.chzn-results li.active-result', chosen).not('.no-results').eq(0).trigger('mouseup');
+
 			//verify selected results
+			expect($('option:selected',select)).to.have.length(2);
 			expect($('.chzn-choices li.search-choice',chosen)).to.have.length(2);
 			var expectedResults = ['Chiquita', 'Ferrari'];
 			$('.chzn-choices li.search-choice', chosen).each(function(i, elem){
 				expect($(elem).text()).to.equal(expectedResults[i]);
 			});
+			$('option:selected',select).each(function(i, elem){
+				expect($(elem).text()).to.equal(expectedResults[i]);
+			});
 		});
-		it('should assign unique ids to all cloned search choices')
 	});
 });

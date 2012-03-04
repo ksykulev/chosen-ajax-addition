@@ -17,7 +17,6 @@ Known issues:
 Critical Todos:
 
 * Make the .ajaxChosen support an array of selected elements (oops!)
-* On multiple selects make sure ids of search-choice are all unique to support proper deletes
 
 Example Usage
 -------------
