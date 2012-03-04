@@ -43,7 +43,9 @@
 			$('option', select).remove();
 
 			$('<option value=""/>').appendTo(select);
-			selected.appendTo(select);
+			if(chosen.hasClass('chzn-container-multi')){
+				selected.appendTo(select);
+			}
 			if ($.isArray(items)) {
 				//array of kv pairs [{id:'', text:''}...]
 				$.each(items, function (i, opt) {
