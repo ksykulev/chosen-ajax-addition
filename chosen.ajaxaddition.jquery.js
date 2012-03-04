@@ -25,7 +25,8 @@
 		}
 		//replace with our success callback
 		ajaxOptions.success = function (data, textStatus, jqXHR) {
-			var items = data;
+			var items = data,
+					selected;
 			//if additional processing needs to occur on the returned json
 			if ('processItems' in options && $.isFunction(options.processItems)) {
 				items = options.processItems(data);
@@ -37,6 +38,8 @@
 				console.log('Expected results key in data, but was not found. Options could not be built');
 				return false;
 			}
+			//.chzn-choices is only present with multi-selects
+			selected = $('.chzn-choices li.search-choice', chosen);
 			$('option', select).remove();
 
 			$('<option value=""/>').appendTo(select);
@@ -58,6 +61,8 @@
 			keyRight.which = 39;
 			//highlight
 			input.val(data.q).trigger(keyRight).css({background: inputBG});
+			//add the previously selected choices for multi select
+			$('.chzn-choices', chosen).prepend(selected);
 			$('> a span', chosen).text(select.attr('placeholder') || '');
 
 			if (items.length > 0) {
@@ -76,7 +81,7 @@
 			loadingImg = options.loadingImg;
 		}
 
-		$('.chzn-search > input', chosen).bind('keyup', function (e) {
+		$('.chzn-search > input, .chzn-choices .search-field input', chosen).bind('keyup', function (e) {
 			var field = $(this),
 					q = $.trim(field.val());
 
@@ -134,7 +139,7 @@
 			}
 			//dynamically generate url
 			if ('generateUrl' in options && $.isFunction(options.generateUrl)) {
-				ajaxOptions.url = options.generateUrl();
+				ajaxOptions.url = options.generateUrl(q);
 			}
 
 			//show loading

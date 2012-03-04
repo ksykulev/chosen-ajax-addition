@@ -4,7 +4,7 @@ We use [chosen](https://github.com/harvesthq/chosen) at work.
 Works great, but one day we needed it to do some server side calls.
 So I quickly wrapped the plugin with some jQuery magic and chosen ajax addition was born.
 Although it doesn't fit with the progressive enhancement ideals of chosen.. it was born quickly and it does what we need it to do for the time being.
-PS I have only wrote/tested this for a select box with options. It definitely not guaranteed to work with the other chosen variations.
+It now supports the single and multi-select versions of chosen.
 
 Warning
 -------
@@ -12,6 +12,7 @@ Known issues:
 
 * This plugin is known to do double work. If the user types a few letters, pauses, ajax fires off and returns results. Then the user types more, the chosen plugin will filter the results via JS as well as the server from the ajax call. 
 * User types, ajax 1 fires, users deletes, ajax 1 finishes and ajax 2 fires off. This sometimes leaves the input in an inconsistent state.
+* On multi-select duplicate results may not be filter. Ex: If the user types 'United States' and selects United States, then types Japan and selects Japan. Typing United States again usually will have it filter from the result set, however it will appear in the result set.
 
 Example Usage
 -------------
@@ -45,7 +46,7 @@ $('select').ajaxChosen({
 },{
 	processItems: function(data){ return data.complex.results; }
 	useAjax: function(e){ return someCheckboxIsChecked(); },
-	generateUrl: function(){ return '/search_page/'+somethingDynamical(); },
+	generateUrl: function(q){ return '/search_page/'+somethingDynamical(); },
 	loadingImg: '../vendor/loading.gif'
 });
 </script>
@@ -59,7 +60,7 @@ __default__: nothing
 __useAjax__ -> this function will be executed on key up to determine whether to use the ajax functionality or not. It must return true or false.
 __default__: true
 
-__generateUrl__ -> this function will get executed right before the ajax call is fired. It will use the return value of this function as the url option for the ajax call.
+__generateUrl__ -> this function will get executed right before the ajax call is fired. It receives the query the user typed as a parameter. It will use the return value of this function as the url option for the ajax call.
 __default__: nothing, uses the url specified in the ajax parameters
 
 __loadingImg__ -> path to the image you wish to show when the ajax call is processing

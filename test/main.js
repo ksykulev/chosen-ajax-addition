@@ -1,5 +1,6 @@
 describe('chosen.ajaxaddition', function(){
 	var select = $('#test-select'),
+			multiSelect = $('#test-multi-select'),
 			space = $('#test-space');
 
 	beforeEach(function(){
@@ -132,7 +133,7 @@ describe('chosen.ajaxaddition', function(){
 			key.which = 65;
 			input.trigger(key);
 			this.clock.tick(750);
-	
+
 			expect(ajaxChosenOptions.useAjax.calledWithExactly(key)).to.be.true;
 			expect(this.server.requests).to.have.length(0);
 		});
@@ -141,7 +142,7 @@ describe('chosen.ajaxaddition', function(){
 					input,
 					key,
 					ajaxChosenOptions = {
-						generateUrl: function(){ return '/search'; }
+						generateUrl: function(q){ return '/search'; }
 					};
 			sinon.spy(ajaxChosenOptions, "generateUrl");
 			chosen = $('select', space).ajaxChosen({
@@ -155,8 +156,9 @@ describe('chosen.ajaxaddition', function(){
 			key.which = 65;
 			input.trigger(key);
 			this.clock.tick(750);
-			
+
 			expect(ajaxChosenOptions.generateUrl.calledOnce).to.be.true;
+			expect(ajaxChosenOptions.generateUrl.calledWithExactly('banan')).to.be.true;
 			expect(this.server.requests).to.have.length(1);
 		});
 	});
@@ -185,7 +187,7 @@ describe('chosen.ajaxaddition', function(){
 				url: '/search',
 				success: successFn
 			},{}).next();
-	
+
 			chosen.trigger('click');
 			input = $('input', chosen).val('banan');
 			key = $.Event('keyup');
@@ -193,7 +195,7 @@ describe('chosen.ajaxaddition', function(){
 			input.trigger(key);
 			this.clock.tick(750);
 			this.server.respond();
-	
+
 			successFn.once().withArgs({ q: "", results: []});
 			expect(successFn.verify()).to.be.true;
 		});
@@ -216,7 +218,7 @@ describe('chosen.ajaxaddition', function(){
 			key.which = 65;
 			input.trigger(key);
 			this.clock.tick(750);
-	
+
 			expect(jQuery.ajax.calledOnce).to.be.true;
 			aData = jQuery.ajax.getCall(0).args[0].data;
 			expectedData = {'somekey':'somevalue', 'data' : { 'q': 'banana' }};
@@ -243,7 +245,7 @@ describe('chosen.ajaxaddition', function(){
 			key.which = 65;
 			input.trigger(key);
 			this.clock.tick(750);
-	
+
 			expect(jQuery.ajax.calledOnce).to.be.true;
 			aData = jQuery.ajax.getCall(0).args[0].data;
 			expectedData = [{'name':'keyboard', 'value':'cat'},{'name':'q', 'value':'banana'}]
@@ -332,7 +334,7 @@ describe('chosen.ajaxaddition', function(){
 			input.trigger(key);
 			this.clock.tick(750);
 			this.server.respond();
-	
+
 			expect(console.log.calledOnce).to.be.true;
 			console.log.restore();
 		});
@@ -348,7 +350,7 @@ describe('chosen.ajaxaddition', function(){
 			type: 'POST',
 			url: '/search'
 		},{}).next();
-	
+
 		chosen.trigger('click');
 		input = $('input', chosen).val('');
 		key = $.Event('keyup');
@@ -356,10 +358,95 @@ describe('chosen.ajaxaddition', function(){
 		input.trigger(key);
 		this.clock.tick(750);
 		this.server.respond();
-	
+
 		expect(this.server.requests).to.have.length(0);
-	
+
 		this.server.restore();
 		this.clock.restore();
+	});
+	describe('multi-select', function(){
+		beforeEach(function(){
+			space.html('');
+			space.append(multiSelect.clone());
+		})
+		it('should bind the keyup event to the input', function(){
+			var chosen,
+					input;
+			chosen = $('select', space).ajaxChosen({
+				dataType: 'json',
+				type: 'POST',
+				url: '/search'
+			},{}).next();
+			chosen.trigger('click');
+
+			input = $('input', chosen).val('');
+			expect($._data( input[0], "events" )['keyup']).to.have.length(2);
+		});
+		it('should keep the options previously selected', function(){
+			var chosen,
+					input,
+					key;
+			this.server = sinon.fakeServer.create();
+			this.clock = sinon.useFakeTimers();
+			this.server.respondWith(
+				'/search',
+				[200, { 'Content-Type': 'application/json' },
+				'{ "q": "banana", "results": [{"id":1, "text":"Chiquita"}]}']
+			);
+			chosen = $('select', space).ajaxChosen({
+				dataType: 'json',
+				type: 'POST',
+				url: '/search'
+			},{}).next();
+
+			chosen.trigger('click');
+			input = $('input', chosen).val('banan');
+			key = $.Event('keyup');
+			key.which = 32;
+			input.trigger(key);
+			this.clock.tick(750);
+			this.server.respond();
+
+			expect($('.chzn-choices li.search-choice',chosen)).to.have.length(0);
+			//have the chiquita result
+			expect($('.chzn-results li', chosen).not('.no-results')).to.have.length(1);
+			expect($('.chzn-results li', chosen).not('.no-results').text()).to.equal('Chiquita');
+			//click on result to add to selected items
+			$('.chzn-results li',chosen).not('.no-results').eq(0).addClass('active-result');
+			$('.chzn-results li',chosen).not('.no-results').eq(0).trigger('mouseup');
+			//verify that it has been added to the selected list
+			expect($('.chzn-choices li.search-choice',chosen)).to.have.length(1);
+			expect($('.chzn-choices li.search-choice',chosen).text()).to.equal('Chiquita');
+
+			this.server.responses.length = 0;
+			this.server.respondWith(
+				'/search',
+				[200, { 'Content-Type': 'application/json' },
+				'{ "q": "ferr", "results": [{"id":2, "text":"Ferrari"}]}']
+			);
+			chosen.trigger('click');
+			input = $('input', chosen).val('fer');
+			key = $.Event('keyup');
+			key.which = 82;
+			input.trigger(key);
+			this.clock.tick(750);
+			this.server.respond();
+
+			//have the original result
+			expect($('.chzn-choices li.search-choice',chosen)).to.have.length(1);
+			expect($('.chzn-choices li.search-choice',chosen).text()).to.equal('Chiquita');
+			//notice how we still only expect one result, chiquita should not be present
+			expect($('.chzn-results li', chosen).not('.no-results')).to.have.length(1);
+			expect($('.chzn-results li', chosen).not('.no-results').text()).to.equal('Ferrari');
+			//click on result to add to selected items
+			$('.chzn-results li', chosen).not('.no-results').eq(0).addClass('active-result');
+			$('.chzn-results li', chosen).not('.no-results').eq(0).trigger('mouseup');
+			//verify selected results
+			expect($('.chzn-choices li.search-choice',chosen)).to.have.length(2);
+			var expectedResults = ['Chiquita', 'Ferrari'];
+			$('.chzn-choices li.search-choice', chosen).each(function(i, elem){
+				expect($(elem).text()).to.equal(expectedResults[i]);
+			});
+		});
 	});
 });
