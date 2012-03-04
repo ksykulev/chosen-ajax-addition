@@ -16,7 +16,7 @@ Known issues:
 
 Critical Todos:
 
-* Make the .ajaxChosen support an array of selected elements (oops!)
+* Make the .ajaxChosen support an array of select elements (oops!)
 
 Example Usage
 -------------
