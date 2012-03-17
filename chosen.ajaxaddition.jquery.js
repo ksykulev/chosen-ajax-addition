@@ -43,7 +43,7 @@
 			$('option', select).remove();
 
 			$('<option value=""/>').appendTo(select);
-			if(chosen.hasClass('chzn-container-multi')){
+			if (chosen.hasClass('chzn-container-multi')) {
 				selected.appendTo(select);
 			}
 			if ($.isArray(items)) {
