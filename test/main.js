@@ -1,7 +1,8 @@
 describe('chosen.ajaxaddition', function(){
 	var select = $('#test-select'),
 			multiSelect = $('#test-multi-select'),
-			space = $('#test-space');
+			space = $('#test-space'),
+			emptySelect = $('#empty-select');
 
 	beforeEach(function(){
 		space.append(select.clone());
@@ -15,6 +16,11 @@ describe('chosen.ajaxaddition', function(){
 		mock.expects('chosen').once();
 		$('select', space).ajaxChosen({},{});
 		expect(mock.verify()).to.be.true;
+	});
+	it("should not add an extra empty option if one is present", function(){
+		expect($('select option', space)).to.have.length(1);
+		$('select', space).ajaxChosen({},{});
+		expect($('select option', space)).to.have.length(1);
 	});
 	it("should proxy chosen options", function(){
 		var mock = sinon.mock($.fn),
@@ -463,6 +469,23 @@ describe('chosen.ajaxaddition', function(){
 			$('option:selected',select).each(function(i, elem){
 				expect($(elem).text()).to.equal(expectedResults[i]);
 			});
+		});
+	});
+	describe('empty-select', function(){
+		beforeEach(function(){
+			space.html('');
+			space.append(emptySelect.clone());
+		});
+		it("should append an empty option if one is not present", function(){
+			expect($('select option', space)).to.have.length(0);
+			$('select', space).ajaxChosen({},{});
+			expect($('select option', space)).to.have.length(1);
+		});
+		it("should not have the nosearch class", function(){
+			var select, chosen;
+			select = $('select', space).ajaxChosen({},{});
+			chosen = select.next();
+			expect(chosen.hasClass('chzn-container-single-nosearch')).to.be.false;
 		});
 	});
 });

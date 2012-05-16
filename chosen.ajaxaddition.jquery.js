@@ -11,6 +11,10 @@
 				callback,
 				loadingImg = '/img/loading.gif';
 
+		if ($('option', select).length === 0) {
+			//adding empty option so you don't have to, and chosen can perform search correctly
+			select.append('<option value=""></option>');
+		}
 		if (chosenOptions) {
 			select.chosen(chosenOptions);
 		} else {
