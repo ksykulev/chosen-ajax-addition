@@ -21,7 +21,6 @@ Critical Todos:
 Some More Todos:
 
 * Move q to higher scope the server doesn't have to pass it back in request
-* Append empty option to select box if one is not already present, this is important for chosen to perform search
 * Add check for ajaxChosenOptions being undefined
 
 Example Usage
