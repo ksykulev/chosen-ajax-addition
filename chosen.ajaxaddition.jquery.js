@@ -88,7 +88,7 @@
 
 		$('.chzn-search > input, .chzn-choices .search-field input', chosen).bind('keyup', function (e) {
 			var field = $(this),
-					q = $.trim(field.val());
+					q = field.val();
 
 			//don't fire ajax if...
 			if (
@@ -122,7 +122,7 @@
 				if (!options.useAjax(e)) { return false; }
 			}
 			//backout if nothing is in input box
-			if (q.length === 0) {
+			if ($.trim(q).length === 0) {
 				return false;
 			}
 

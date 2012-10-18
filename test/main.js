@@ -370,6 +370,34 @@ describe('chosen.ajaxaddition', function(){
 		this.server.restore();
 		this.clock.restore();
 	});
+	it('should not trim the space at the end of a users input - it might be what they actually meant', function(){
+		var chosen,
+				input,
+				key;
+
+		this.server = sinon.fakeServer.create();
+		this.clock = sinon.useFakeTimers();
+		this.server.respondWith(
+			'/search',
+			[200, { 'Content-Type': 'application/json' },
+			'{ "q": "Trailing Spaces are cool yo ", "results": [{"id":1, "text":"I hate trailing spaces"}]}']
+		);
+		chosen = $('select', space).ajaxChosen({
+			dataType: 'json',
+			type: 'POST',
+			url: '/search'
+		},{}).next();
+
+		chosen.trigger('click');
+		input = $('input', chosen).val('Trailing Spaces are cool yo ');
+		key = $.Event('keyup');
+		key.which = 32;
+		input.trigger(key);
+		this.clock.tick(750);
+		this.server.respond();
+
+		expect(this.server.requests[0].requestBody).to.equal("data%5Bq%5D=Trailing+Spaces+are+cool+yo+");
+	});
 	describe('multi-select', function(){
 		beforeEach(function(){
 			space.html('');
