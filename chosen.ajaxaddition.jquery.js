@@ -22,7 +22,7 @@
 		}
 		chosen = select.next();
 		input = $('input', chosen);
-		inputBG = input.css('background');
+		inputBG = input.get(0).style.background;
 		//copy out success callback
 		if ('success' in ajaxOptions && $.isFunction(ajaxOptions.success)) {
 			callback = ajaxOptions.success;
@@ -67,7 +67,7 @@
 			keyRight = $.Event('keyup');
 			keyRight.which = 39;
 			//highlight
-			input.val(data.q).trigger(keyRight).css({background: inputBG});
+			input.val(data.q).trigger(keyRight).get(0).style.background = inputBG;
 			$('> a span', chosen).text(select.attr('placeholder') || '');
 
 			if (items.length > 0) {
@@ -148,7 +148,7 @@
 			}
 
 			//show loading
-			input.css({background: 'transparent url("' + loadingImg + '") no-repeat right 3px'});
+			input.get(0).style.background = 'transparent url("' + loadingImg + '") no-repeat right 3px';
 			//throttle that bitch, so we don't kill the server
 			if (throttle) { clearTimeout(throttle); }
 			throttle = setTimeout(function () {

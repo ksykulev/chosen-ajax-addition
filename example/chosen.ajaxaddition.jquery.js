@@ -11,6 +11,10 @@
 				callback,
 				loadingImg = '/img/loading.gif';
 
+		if ($('option', select).length === 0) {
+			//adding empty option so you don't have to, and chosen can perform search correctly
+			select.append('<option value=""></option>');
+		}
 		if (chosenOptions) {
 			select.chosen(chosenOptions);
 		} else {
@@ -18,7 +22,7 @@
 		}
 		chosen = select.next();
 		input = $('input', chosen);
-		inputBG = input.css('background');
+		inputBG = input.get(0).style.background;
 		//copy out success callback
 		if ('success' in ajaxOptions && $.isFunction(ajaxOptions.success)) {
 			callback = ajaxOptions.success;
@@ -63,7 +67,7 @@
 			keyRight = $.Event('keyup');
 			keyRight.which = 39;
 			//highlight
-			input.val(data.q).trigger(keyRight).css({background: inputBG});
+			input.val(data.q).trigger(keyRight).get(0).style.background = inputBG;
 			$('> a span', chosen).text(select.attr('placeholder') || '');
 
 			if (items.length > 0) {
@@ -84,7 +88,7 @@
 
 		$('.chzn-search > input, .chzn-choices .search-field input', chosen).bind('keyup', function (e) {
 			var field = $(this),
-					q = $.trim(field.val());
+					q = field.val();
 
 			//don't fire ajax if...
 			if (
@@ -118,7 +122,7 @@
 				if (!options.useAjax(e)) { return false; }
 			}
 			//backout if nothing is in input box
-			if (q.length === 0) {
+			if ($.trim(q).length === 0) {
 				return false;
 			}
 
@@ -144,7 +148,7 @@
 			}
 
 			//show loading
-			input.css({background: 'transparent url("' + loadingImg + '") no-repeat right 3px'});
+			input.get(0).style.background = 'transparent url("' + loadingImg + '") no-repeat right 3px';
 			//throttle that bitch, so we don't kill the server
 			if (throttle) { clearTimeout(throttle); }
 			throttle = setTimeout(function () {
