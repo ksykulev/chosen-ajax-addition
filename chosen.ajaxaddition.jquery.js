@@ -22,7 +22,7 @@
 		}
 		chosen = select.next();
 		input = $('input', chosen);
-		inputBG = input.get(0).style.background;
+		inputBG = input.get(0) ? input.get(0).style.background : '';
 		//copy out success callback
 		if ('success' in ajaxOptions && $.isFunction(ajaxOptions.success)) {
 			callback = ajaxOptions.success;
