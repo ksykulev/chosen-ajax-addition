@@ -1,14 +1,22 @@
 /*jshint forin:true, noarg:true, noempty:true, eqeqeq:false, bitwise:true, strict:true, undef:true, curly:true, browser:true, indent:4, maxerr:50, onevar:false, nomen:false, regexp:false, plusplus:false, newcap:true */
 (function ($) {
 	"use strict";
+	//Thanks John - http://ejohn.org/blog/javascript-array-remove/
+	var arrayRemove = function (from, to) {
+		var rest = this.slice((to || from) + 1 || this.length);
+		this.length = from < 0 ? this.length + from : from;
+		return this.push.apply(this, rest);
+	};
 	$.fn.ajaxChosen = function (ajaxOptions, options, chosenOptions) {
 		var select = $(this),
 				chosen,
-				throttle = false,
 				keyRight,
 				input,
 				inputBG,
 				callback,
+				throttle = false,
+				requestQueue = [],
+				typing = false,
 				loadingImg = '/img/loading.gif';
 
 		if ($('option', select).length === 0) {
@@ -30,7 +38,43 @@
 		//replace with our success callback
 		ajaxOptions.success = function (data, textStatus, jqXHR) {
 			var items = data,
-					selected;
+					selected,
+					requestQueueLength = requestQueue.length,
+					old = false,
+					keep = false;
+			if (typing) {
+				//server returned a response, but it's about to become an older response
+				//so discard it and wait until the user is done typing
+				requestQueue.shift();
+				return false;
+			}
+			if (requestQueueLength > 1) {
+				$.each(requestQueue, function (idx, elem) {
+					if (data.q === elem) {
+						if (idx !== (requestQueueLength - 1)) {
+							//found an older response, remove it from the queue and wait for newest response
+							old = true;
+							arrayRemove.call(requestQueue, idx);
+						} else {
+							//this handles the out of order request/response
+							//last request came in first, and we want to keep it
+							keep = true;
+							//remove all the other older requests
+							requestQueue.length = 0;
+						}
+						return false;
+					}
+				});
+				//if we found an old response or we found the newest response and want to keep processing
+				if (old || !keep) { return false; }
+			} else {
+				//only 1 request was made by the user remove it from queue and continue processing
+				if (typeof requestQueue.shift() === 'undefined') {
+					//If all the old responses have been discarded because we've received the new one already
+					return false;
+				}
+			}
+
 			//if additional processing needs to occur on the returned json
 			if ('processItems' in options && $.isFunction(options.processItems)) {
 				items = options.processItems(data);
@@ -126,6 +170,8 @@
 				return false;
 			}
 
+			typing = true;
+
 			//hide no results
 			$('.no-results', chosen).hide();
 			//add query to data
@@ -152,6 +198,8 @@
 			//throttle that bitch, so we don't kill the server
 			if (throttle) { clearTimeout(throttle); }
 			throttle = setTimeout(function () {
+				requestQueue.push(q);
+				typing = false;
 				$.ajax(ajaxOptions);
 			}, 700);
 		});

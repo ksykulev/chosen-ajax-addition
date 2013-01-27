@@ -85,7 +85,7 @@ describe('chosen.ajaxaddition', function(){
 				type: 'POST',
 				url:'/search'
 			},{
-				loadingImg: '../vendor/loading.gif'
+				loadingImg: 'img/l04der.gif'
 			}).next();
 			chosen.trigger('click');
 			input = $('input', chosen).val('banan');
@@ -94,7 +94,7 @@ describe('chosen.ajaxaddition', function(){
 			key = $.Event('keyup');
 			key.which = 65;
 			input.trigger(key);
-			expect(input.css('background-image')).to.match(/loading\.gif/i);
+			expect(input.css('background-image')).to.match(/l04der\.gif/i);
 		});
 		it('should apply the processItems function to response data', function(){
 			var chosen,
@@ -514,6 +514,154 @@ describe('chosen.ajaxaddition', function(){
 			select = $('select', space).ajaxChosen({},{});
 			chosen = select.next();
 			expect(chosen.hasClass('chzn-container-single-nosearch')).to.be.false;
+		});
+	});
+	describe('a request queue to ensure the user only sees the last response', function(){
+		beforeEach(function(){
+			this.clock = sinon.useFakeTimers();
+			this.xhr = sinon.useFakeXMLHttpRequest();
+			var requests = this.requests = [];
+			this.xhr.onCreate = function (xhr) { requests.push(xhr) };
+		});
+		afterEach(function(){
+			this.clock.restore();
+			this.xhr.restore();
+		});
+		it('during typing', function(){
+			var chosen,
+					input,
+					key;
+
+			chosen = $('select', space).ajaxChosen({
+				dataType: 'json',
+				type: 'POST',
+				url: '/search'
+			},{}).next();
+			chosen.trigger('click');
+
+			//first request
+			input = $('input', chosen).val('monkey');
+			key = $.Event('keyup');
+			key.which = 32;
+			input.trigger(key);
+			this.clock.tick(750);
+			//server begins processing request 1
+			expect(input.val()).to.equal('monkey');
+			expect(this.requests).to.have.length(1);
+
+			//second request
+			input.val('banana');
+			key = $.Event('keyup');
+			key.which = 32;
+			input.trigger(key);
+			this.clock.tick(350);//not enough time to start processing the request
+			expect(input.val()).to.equal('banana');
+			expect(this.requests).to.have.length(1);//see still one request
+
+			//request 1 comes back while we're still typing! Dam the server is fast
+			this.requests[0].respond(200, { "Content-Type": "application/json" }, '{ "q": "monkey", "results": [{"id":1, "text":"first monkey"}]}');
+
+			//discard first response keep newly typed word and ajax chosen should still look like it's still processing
+			expect(input.val()).to.equal('banana');
+			expect(input.css('background-image')).to.match(/loading\.gif/i);
+			//the rest of the clock ticks down so we should now fire off the second request
+			this.clock.tick(400);
+			expect(this.requests).to.have.length(2);
+			expect(input.val()).to.equal('banana');
+			//yup still waiting for the server to respond
+			expect(input.css('background-image')).to.match(/loading\.gif/i);
+
+			//response 2 comes back and banana is selected
+			this.requests[1].respond(200, { "Content-Type": "application/json" }, '{ "q": "banana", "results": [{"id":1, "text":"banana bunch"}]}');
+			expect(input.val()).to.equal('banana');
+			expect(input.css('background-image')).to.not.match(/loading\.gif/i);
+		});
+		it('in order', function(){
+			var chosen,
+					input,
+					key;
+
+			chosen = $('select', space).ajaxChosen({
+				dataType: 'json',
+				type: 'POST',
+				url: '/search'
+			},{}).next();
+			chosen.trigger('click');
+
+			//first request
+			input = $('input', chosen).val('monkey');
+			key = $.Event('keyup');
+			key.which = 32;
+			input.trigger(key);
+			this.clock.tick(750);
+			//server begins processing request 1
+			expect(input.val()).to.equal('monkey');
+			expect(this.requests).to.have.length(1);
+
+			//second request
+			input.val('banana');
+			key = $.Event('keyup');
+			key.which = 32;
+			input.trigger(key);
+			this.clock.tick(750);
+			//server begins processing request 2
+			expect(input.val()).to.equal('banana');
+			expect(this.requests).to.have.length(2);
+
+			//response 1 comes back
+			this.requests[0].respond(200, { "Content-Type": "application/json" }, '{ "q": "monkey", "results": [{"id":1, "text":"first monkey"}]}');
+
+			//discard first response keep newly typed word and ajax chosen should still look like it's still processing
+			expect(input.val()).to.equal('banana');
+			expect(input.css('background-image')).to.match(/loading\.gif/i);
+
+			//response 2 comes back and banana is selected
+			this.requests[1].respond(200, { "Content-Type": "application/json" }, '{ "q": "banana", "results": [{"id":1, "text":"banana bunch"}]}');
+			expect(input.val()).to.equal('banana');
+			expect(input.css('background-image')).to.not.match(/loading\.gif/i);
+		});
+		it('out of order', function(){
+			var chosen,
+					input,
+					key;
+
+			chosen = $('select', space).ajaxChosen({
+				dataType: 'json',
+				type: 'POST',
+				url: '/search'
+			},{}).next();
+			chosen.trigger('click');
+
+			//first request
+			input = $('input', chosen).val('monkey');
+			key = $.Event('keyup');
+			key.which = 32;
+			input.trigger(key);
+			this.clock.tick(750);
+			//server begins processing request 1
+			expect(input.val()).to.equal('monkey');
+			expect(this.requests).to.have.length(1);
+
+			//second request
+			input.val('banana');
+			key = $.Event('keyup');
+			key.which = 32;
+			input.trigger(key);
+			this.clock.tick(750);
+			//server begins processing request 2
+			expect(input.val()).to.equal('banana');
+			expect(this.requests).to.have.length(2);
+
+			//response 2 comes back first and banana is selected
+			this.requests[1].respond(200, { "Content-Type": "application/json" }, '{ "q": "banana", "results": [{"id":1, "text":"banana bunch"}]}');
+			expect(input.val()).to.equal('banana');
+			expect(input.css('background-image')).to.not.match(/loading\.gif/i);
+
+			//response 1 comes back out of order
+			this.requests[0].respond(200, { "Content-Type": "application/json" }, '{ "q": "monkey", "results": [{"id":1, "text":"first monkey"}]}');
+			//discard first response keep newly typed word and result set
+			expect(input.val()).to.equal('banana');
+			expect(input.css('background-image')).to.not.match(/loading\.gif/i);
 		});
 	});
 });
