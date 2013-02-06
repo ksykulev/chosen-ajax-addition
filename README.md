@@ -21,7 +21,7 @@ Critical Todos:
 Some More Todos:
 
 * Move q to higher scope the server doesn't have to pass it back in request
-* Add check for ajaxChosenOptions being undefined
+* ~~Add check for ajaxChosenOptions being undefined
 
 Example Usage
 -------------

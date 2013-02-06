@@ -76,6 +76,12 @@ describe('chosen.ajaxaddition', function(){
 			this.server.restore();
 			this.clock.restore();
 		});
+		it('should initial chosen with empty options', function(){
+			var mock = sinon.mock($.fn);
+			mock.expects('chosen').once();
+			$('select', space).ajaxChosen({});
+			expect(mock.verify()).to.be.true;
+		});
 		it('should use loadingImg while processing', function(){
 			var chosen,
 					input,
@@ -563,18 +569,18 @@ describe('chosen.ajaxaddition', function(){
 
 			//discard first response keep newly typed word and ajax chosen should still look like it's still processing
 			expect(input.val()).to.equal('banana');
-			expect(input.css('background-image')).to.match(/loading\.gif/i);
+			expect(input.prop('style')['background']).to.match(/loading\.gif/i);
 			//the rest of the clock ticks down so we should now fire off the second request
 			this.clock.tick(400);
 			expect(this.requests).to.have.length(2);
 			expect(input.val()).to.equal('banana');
 			//yup still waiting for the server to respond
-			expect(input.css('background-image')).to.match(/loading\.gif/i);
+			expect(input.prop('style')['background']).to.match(/loading\.gif/i);
 
 			//response 2 comes back and banana is selected
 			this.requests[1].respond(200, { "Content-Type": "application/json" }, '{ "q": "banana", "results": [{"id":1, "text":"banana bunch"}]}');
 			expect(input.val()).to.equal('banana');
-			expect(input.css('background-image')).to.not.match(/loading\.gif/i);
+			expect(input.prop('style')['background']).to.not.match(/loading\.gif/i);
 		});
 		it('in order', function(){
 			var chosen,
@@ -613,12 +619,12 @@ describe('chosen.ajaxaddition', function(){
 
 			//discard first response keep newly typed word and ajax chosen should still look like it's still processing
 			expect(input.val()).to.equal('banana');
-			expect(input.css('background-image')).to.match(/loading\.gif/i);
+			expect(input.prop('style')['background']).to.match(/loading\.gif/i);
 
 			//response 2 comes back and banana is selected
 			this.requests[1].respond(200, { "Content-Type": "application/json" }, '{ "q": "banana", "results": [{"id":1, "text":"banana bunch"}]}');
 			expect(input.val()).to.equal('banana');
-			expect(input.css('background-image')).to.not.match(/loading\.gif/i);
+			expect(input.prop('style')['background']).to.not.match(/loading\.gif/i);
 		});
 		it('out of order', function(){
 			var chosen,

@@ -126,6 +126,7 @@
 			}
 		};
 		//set loading image
+		options || (options = {});
 		if ('loadingImg' in options) {
 			loadingImg = options.loadingImg;
 		}
