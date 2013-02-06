@@ -125,6 +125,9 @@
 				callback(data, textStatus, jqXHR);
 			}
 		};
+		
+		// we expect option to be defined as hash
+		options ||= {};
 		//set loading image
 		options || (options = {});
 		if ('loadingImg' in options) {
