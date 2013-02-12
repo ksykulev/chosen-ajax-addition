@@ -1,5 +1,5 @@
 <?php
-$q = trim($_POST['data']['q']);
+$q = $_POST['data']['q'];
 
 $states = array(
 	'Alabama',
