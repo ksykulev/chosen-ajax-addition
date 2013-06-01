@@ -91,9 +91,9 @@
 			$('option', select).remove();
 
 			$('<option value=""/>').appendTo(select);
-			if (chosen.hasClass('chzn-container-multi')) {
-				selected.appendTo(select);
-			}
+			//appending this even on single select in the event the user changes their mind and input is blurred. Keeps selected option selected
+			selected.appendTo(select);
+
 			if ($.isArray(items)) {
 				//array of kv pairs [{id:'', text:''}...]
 				$.each(items, function (i, opt) {
@@ -112,7 +112,6 @@
 			keyRight.which = 39;
 			//highlight
 			input.val(data.q).trigger(keyRight).get(0).style.background = inputBG;
-			$('> a span', chosen).text(select.attr('placeholder') || '');
 
 			if (items.length > 0) {
 				$('.no-results', chosen).hide();

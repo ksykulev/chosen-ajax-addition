@@ -404,6 +404,61 @@ describe('chosen.ajaxaddition', function(){
 
 		expect(this.server.requests[0].requestBody).to.equal("data%5Bq%5D=Trailing+Spaces+are+cool+yo+");
 	});
+	it("should reselect option on single select when chosen input is blurred", function(){
+		var clock = sinon.useFakeTimers(),
+				xhr = sinon.useFakeXMLHttpRequest(),
+				chosen,
+				input,
+				key;
+				requests = [];
+
+		xhr.onCreate = function (xhr) { requests.push(xhr) };
+
+		chosen = $('select', space).ajaxChosen({
+			dataType: 'json',
+			type: 'POST',
+			url: '/search'
+		},{}).next();
+		chosen.trigger('click').width('135px');
+
+		//first request
+		input = $('input', chosen).val('monkey');
+		key = $.Event('keyup');
+		key.which = 32;
+		input.trigger(key);
+		clock.tick(750);
+
+		//return response
+		var selectedId = "1",
+				selectedText = "first monkey";
+		requests[0].respond(200, { "Content-Type": "application/json" }, '{ "q": "monkey", "results": [{"id":'+selectedId+', "text":"'+selectedText+'"}]}');
+		//select the item that is returned
+		$('.active-result', chosen).trigger('mouseup');
+		expect($('select', space).val()).to.equal(selectedId);
+		expect($('> a.chzn-single', chosen).text()).to.equal(selectedText);
+
+		//go for the second request..
+		chosen.trigger('click');
+		input = $('input', chosen).val('banana');
+		key = $.Event('keyup');
+		key.which = 32;
+		input.trigger(key);
+		clock.tick(750);
+		expect(input.val()).to.equal('banana');
+		requests[1].respond(200, { "Content-Type": "application/json" }, '{ "q": "banana", "results": [{"id":2, "text":"banana tree"}]}');
+
+		//hit the escape key to trigger input blur
+		key = $.Event('keyup');
+		key.which = 27; //esc key
+		input.trigger(key);
+
+		//ensure what was selected, stays selected
+		expect($('select', space).val()).to.equal(selectedId);
+		expect($('> a.chzn-single', chosen).text()).to.equal(selectedText);
+
+		clock.restore();
+		xhr.restore();
+	});
 	describe('multi-select', function(){
 		beforeEach(function(){
 			space.html('');
