@@ -12,7 +12,7 @@ Known issues:
 
 * This plugin is known to do double work. If the user types a few letters, pauses, ajax fires off and returns results. Then the user types more, the chosen plugin will filter the results via JS as well as the server from the ajax call. 
 * ~~User types, ajax 1 fires, users deletes, ajax 1 finishes and ajax 2 fires off. This sometimes leaves the input in an inconsistent state.~~ (fixed as of df3feae49)
-* On multi-select duplicate results may not be filter. Ex: If the user types 'United States' and selects United States, then types Japan and selects Japan. Typing United States again usually will have it filter from the result set, however it will appear in the result set.
+* ~~On multi-select duplicate results may not be filter. Ex: If the user types 'United States' and selects United States, then types Japan and selects Japan. Typing United States again usually will have it filter from the result set, however it will appear in the result set.~~ (fixed as of e5ddd9fb2)
 
 Critical Todos:
 
@@ -21,7 +21,7 @@ Critical Todos:
 Some More Todos:
 
 * Move q to higher scope the server doesn't have to pass it back in request
-* ~~Add check for ajaxChosenOptions being undefined
+* ~~Add check for ajaxChosenOptions being undefined~~
 
 Example Usage
 -------------
