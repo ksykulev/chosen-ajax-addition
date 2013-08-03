@@ -38,7 +38,7 @@
 		//replace with our success callback
 		ajaxOptions.success = function (data, textStatus, jqXHR) {
 			var items = data,
-					selected,
+					selected, valuesArray, valuesHash = {},
 					requestQueueLength = requestQueue.length,
 					old = false,
 					keep = false;
@@ -88,6 +88,15 @@
 			}
 			//.chzn-choices is only present with multi-selects
 			selected = $('option:selected', select).not(':empty').clone().attr('selected', true);
+			//saving values for deduplication
+			if(!$.isArray(select.val())) {
+				valuesArray = [select.val()];
+			} else {
+				valuesArray = select.val();
+			}
+			$.each(valuesArray, function (i, value) {
+				valuesHash[value] = 1;
+			});
 			$('option', select).remove();
 
 			$('<option value=""/>').appendTo(select);
@@ -97,12 +106,16 @@
 			if ($.isArray(items)) {
 				//array of kv pairs [{id:'', text:''}...]
 				$.each(items, function (i, opt) {
-					$('<option value="' + opt.id + '">' + opt.text + '</option>').appendTo(select);
+					if(typeof valuesHash[opt.id] === 'undefined') {
+						$('<option value="' + opt.id + '">' + opt.text + '</option>').appendTo(select);
+					}
 				});
 			} else {
 				//hash of kv pairs {'id':'text'...}
 				$.each(items, function (value, text) {
-					$('<option value="' + value + '">' + text + '</option>').appendTo(select);
+					if(typeof valuesHash[value] === 'undefined') {
+						$('<option value="' + value + '">' + text + '</option>').appendTo(select);
+					}
 				});
 			}
 			//update chosen

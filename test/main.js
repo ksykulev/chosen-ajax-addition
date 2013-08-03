@@ -409,7 +409,7 @@ describe('chosen.ajaxaddition', function(){
 				xhr = sinon.useFakeXMLHttpRequest(),
 				chosen,
 				input,
-				key;
+				key,
 				requests = [];
 
 		xhr.onCreate = function (xhr) { requests.push(xhr) };
@@ -459,11 +459,160 @@ describe('chosen.ajaxaddition', function(){
 		clock.restore();
 		xhr.restore();
 	});
+	describe('duplication', function(){
+		beforeEach(function(){
+			this.server = sinon.fakeServer.create();
+			this.clock = sinon.useFakeTimers();
+		});
+		afterEach(function(){
+			this.server.restore();
+			this.clock.restore();
+		});
+		describe('single select', function(){
+			it('should not duplicate pre-selected result', function(){
+				var chosen,
+						input,
+						key,
+						selectedId;
+				this.server.respondWith(
+					'/search',
+					[200, { 'Content-Type': 'application/json' },
+					'{ "q": "monkeys", "results": [{"id":"bananas", "text":"monkeys eat"}]}']
+				);
+				selectedId = 'bananas';
+				$('select', space).append('<option value="bananas">monkeys eat</option>').val(selectedId);
+				chosen = $('select', space).ajaxChosen({
+					dataType: 'json',
+					type: 'POST',
+					url: '/search'
+				},{}).next();
+
+				expect($('select option', space)).to.have.length(2);
+
+				chosen.trigger('click');
+				input = $('input', chosen).val('monkey');
+				key = $.Event('keyup');
+				key.which = 83;
+				input.trigger(key);
+				this.clock.tick(750);
+				this.server.respond();
+
+				expect($('select option', space)).to.have.length(2);//empty + pre-selected result (not duplicate)
+				expect($('select option', space).eq(1).text()).to.equal('monkeys eat');
+				//check option to make sure it has monkeys eat option
+
+				//have the monkeys eat result once
+				expect($('.chzn-results li', chosen)).to.have.length(1);
+				expect($('.chzn-results li', chosen).text()).to.equal('monkeys eat');
+
+				//pre-selected result should still be selected
+				expect($('.chzn-results li.result-selected', chosen).text()).to.equal('monkeys eat');
+				expect($('select', space).val()).to.equal(selectedId);
+			});
+		});
+		describe('multi-select', function(){
+			beforeEach(function(){
+				space.html('');
+				space.append(multiSelect.clone());
+			});
+			it('should not duplicate pre-selected single result', function(){
+				var select,
+						chosen,
+						input,
+						key,
+						selectedIds;
+				this.server.respondWith(
+					'/search',
+					[200, { 'Content-Type': 'application/json' },
+					'{ "q": "toyota", "results": [{"id":"1", "text":"toyota tundra"},{"id":"2", "text":"toyota camery"}]}']
+				);
+				selectedIds = ['1'];
+				select = $('select', space);
+				select.append('<option value="1">toyota tundra</option><option value="2">toyota camery</option>').val(selectedIds);
+				chosen = select.ajaxChosen({
+					dataType: 'json',
+					type: 'POST',
+					url: '/search'
+				},{}).next();
+
+				expect($('option', select)).to.have.length(3);
+
+				chosen.trigger('click');
+				input = $('input', chosen).val('toyot');
+				key = $.Event('keyup');
+				key.which = 32;
+				input.trigger(key);
+				this.clock.tick(750);
+				this.server.respond();
+
+				expect($('option', select)).to.have.length(3);
+				expect($('.chzn-results li', chosen)).to.have.length(2);
+
+				expect($('option', select).eq(1).text()).to.equal('toyota tundra');
+				expect($('option', select).eq(2).text()).to.equal('toyota camery');
+
+				expect($('.chzn-results li', chosen).eq(0).text()).to.equal('toyota tundra');
+				expect($('.chzn-results li', chosen).eq(1).text()).to.equal('toyota camery');
+
+				expect($('.chzn-choices li.search-choice',chosen)).to.have.length(1);
+				expect($('.chzn-choices li.search-choice',chosen).text()).to.equal('toyota tundra');
+				//weird how chai doesn't make ['1'] === ['1']
+				expect(select.val()[0]).to.have.equal(selectedIds[0]);
+			});
+			it('should not duplicate pre-selected results', function(){
+				var select,
+						chosen,
+						input,
+						key,
+						selectedIds;
+				this.server.respondWith(
+					'/search',
+					[200, { 'Content-Type': 'application/json' },
+					'{ "q": "toyota", "results": [{"id":"1", "text":"toyota tundra"},{"id":"2", "text":"toyota camery"}]}']
+				);
+				selectedIds = ['1','2'];
+				select = $('select', space);
+				select.append('<option value="1">toyota tundra</option><option value="2">toyota camery</option>').val(selectedIds);
+				chosen = select.ajaxChosen({
+					dataType: 'json',
+					type: 'POST',
+					url: '/search'
+				},{}).next();
+
+				expect($('option', select)).to.have.length(3);
+
+				chosen.trigger('click');
+				input = $('input', chosen).val('toyot');
+				key = $.Event('keyup');
+				key.which = 32;
+				input.trigger(key);
+				this.clock.tick(750);
+				this.server.respond();
+
+				expect($('option', select)).to.have.length(3);
+				expect($('.chzn-results li', chosen).not('.no-results')).to.have.length(2);
+
+				expect($('option', select).eq(1).text()).to.equal('toyota tundra');
+				expect($('option', select).eq(2).text()).to.equal('toyota camery');
+
+				expect($('.chzn-results li', chosen).not('.no-results').eq(0).text()).to.equal('toyota tundra');
+				expect($('.chzn-results li', chosen).not('.no-results').eq(1).text()).to.equal('toyota camery');
+
+				expect($('.chzn-choices li.search-choice',chosen)).to.have.length(2);
+				expect($('.chzn-choices li.search-choice',chosen).eq(0).text()).to.equal('toyota tundra');
+				expect($('.chzn-choices li.search-choice',chosen).eq(1).text()).to.equal('toyota camery');
+
+				//weird how chai doesn't make ['1','2'] === ['1','2']
+				expect(select.val()[0]).to.have.equal(selectedIds[0]);
+				expect(select.val()[1]).to.have.equal(selectedIds[1]);
+			});
+		});
+	});
 	describe('multi-select', function(){
 		beforeEach(function(){
 			space.html('');
 			space.append(multiSelect.clone());
-		})
+		});
 		it('should bind the keyup event to the input', function(){
 			var chosen,
 					input;
