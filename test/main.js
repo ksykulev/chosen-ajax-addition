@@ -636,7 +636,7 @@ describe('chosen.ajaxaddition', function(){
 			this.server.respondWith(
 				'/search',
 				[200, { 'Content-Type': 'application/json' },
-				'{ "q": "banana", "results": [{"id":1, "text":"Chiquita"}]}']
+				'{ "q": "Ala", "results": [{"id":1, "text":"Alabama"}]}']
 			);
 			select = $('select', space).ajaxChosen({
 				dataType: 'json',
@@ -646,9 +646,9 @@ describe('chosen.ajaxaddition', function(){
 			chosen = select.next();
 
 			chosen.trigger('click');
-			input = $('input', chosen).val('banan');
+			input = $('input', chosen).val('Al');
 			key = $.Event('keyup');
-			key.which = 32;
+			key.which = 97;
 			input.trigger(key);
 			this.clock.tick(750);
 			this.server.respond();
@@ -658,41 +658,41 @@ describe('chosen.ajaxaddition', function(){
 			expect($('.chosen-choices li.search-choice',chosen)).to.have.length(0);
 			//have the chiquita result
 			expect($('.chosen-results li', chosen).not('.no-results')).to.have.length(1);
-			expect($('.chosen-results li', chosen).not('.no-results').text()).to.equal('Chiquita');
+			expect($('.chosen-results li', chosen).not('.no-results').text()).to.equal('Alabama');
 			//click on result to add to selected items
 			$('.chosen-results li',chosen).not('.no-results').eq(0).addClass('active-result');
 			$('.chosen-results li',chosen).not('.no-results').eq(0).trigger('mouseup');
 			//verify that it has been added to the selected list
 			expect($('option:selected',select)).to.have.length(1);
-			expect($('option:selected',select).text()).to.equal('Chiquita');
-			expect($('.chosen-choices li.search-choice',chosen)).to.have.length(1);
-			expect($('.chosen-choices li.search-choice',chosen).text()).to.equal('Chiquita');
+			expect($('option:selected',select).text()).to.equal('Alabama');
+			expect($('.chosen-choices li.search-field',chosen)).to.have.length(1);
+			expect($('.chosen-choices li.search-choice',chosen).text()).to.equal('Alabama');
 
 			this.server.responses.length = 0;
 			this.server.respondWith(
 				'/search',
 				[200, { 'Content-Type': 'application/json' },
-				'{ "q": "ferr", "results": [{"id":2, "text":"Ferrari"}]}']
+				'{ "q": "ala", "results": [{"id":2, "text":"Alaska"}]}']
 			);
 			chosen.trigger('click');
-			input = $('input', chosen).val('fer');
+			input = $('input', chosen).val('al');
 			key = $.Event('keyup');
-			key.which = 82;
+			key.which = 97;
 			input.trigger(key);
 			this.clock.tick(750);
 			this.server.respond();
 
 			//select box still has chiquita selected
 			expect($('option:selected',select)).to.have.length(1);
-			expect($('option:selected',select).text()).to.equal('Chiquita');
+			expect($('option:selected',select).text()).to.equal('Alabama');
 			//have the original result
 			expect($('.chosen-choices li.search-choice',chosen)).to.have.length(1);
-			expect($('.chosen-choices li.search-choice',chosen).text()).to.equal('Chiquita');
+			expect($('.chosen-choices li.search-choice',chosen).text()).to.equal('Alabama');
 			//notice how we have two results and one is 'active-result' and the other is 'result-selected'
 			expect($('.chosen-results li.result-selected', chosen)).to.have.length(1);
-			expect($('.chosen-results li.result-selected', chosen).text()).to.equal('Chiquita');
+			expect($('.chosen-results li.result-selected', chosen).text()).to.equal('Alabama');
 			expect($('.chosen-results li.active-result', chosen).not('.no-results')).to.have.length(1);
-			expect($('.chosen-results li.active-result', chosen).not('.no-results').text()).to.equal('Ferrari');
+			expect($('.chosen-results li.active-result', chosen).not('.no-results').text()).to.equal('Alaska');
 			//click on result to add to selected items
 			$('.chosen-results li.active-result', chosen).not('.no-results').eq(0).addClass('active-result');
 			$('.chosen-results li.active-result', chosen).not('.no-results').eq(0).trigger('mouseup');
@@ -700,7 +700,7 @@ describe('chosen.ajaxaddition', function(){
 			//verify selected results
 			expect($('option:selected',select)).to.have.length(2);
 			expect($('.chosen-choices li.search-choice',chosen)).to.have.length(2);
-			var expectedResults = ['Chiquita', 'Ferrari'];
+			var expectedResults = ['Alabama', 'Alaska'];
 			$('.chosen-choices li.search-choice', chosen).each(function(i, elem){
 				expect($(elem).text()).to.equal(expectedResults[i]);
 			});
