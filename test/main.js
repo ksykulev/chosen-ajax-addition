@@ -435,7 +435,7 @@ describe('chosen.ajaxaddition', function(){
 		//select the item that is returned
 		$('.active-result', chosen).trigger('mouseup');
 		expect($('select', space).val()).to.equal(selectedId);
-		expect($('> a.chzn-single', chosen).text()).to.equal(selectedText);
+		expect($('> a.chosen-single', chosen).text()).to.equal(selectedText);
 
 		//go for the second request..
 		chosen.trigger('click');
@@ -454,7 +454,7 @@ describe('chosen.ajaxaddition', function(){
 
 		//ensure what was selected, stays selected
 		expect($('select', space).val()).to.equal(selectedId);
-		expect($('> a.chzn-single', chosen).text()).to.equal(selectedText);
+		expect($('> a.chosen-single', chosen).text()).to.equal(selectedText);
 
 		clock.restore();
 		xhr.restore();
@@ -502,11 +502,11 @@ describe('chosen.ajaxaddition', function(){
 				//check option to make sure it has monkeys eat option
 
 				//have the monkeys eat result once
-				expect($('.chzn-results li', chosen)).to.have.length(1);
-				expect($('.chzn-results li', chosen).text()).to.equal('monkeys eat');
+				expect($('.chosen-results li', chosen)).to.have.length(1);
+				expect($('.chosen-results li', chosen).text()).to.equal('monkeys eat');
 
 				//pre-selected result should still be selected
-				expect($('.chzn-results li.result-selected', chosen).text()).to.equal('monkeys eat');
+				expect($('.chosen-results li.result-selected', chosen).text()).to.equal('monkeys eat');
 				expect($('select', space).val()).to.equal(selectedId);
 			});
 		});
@@ -546,16 +546,16 @@ describe('chosen.ajaxaddition', function(){
 				this.server.respond();
 
 				expect($('option', select)).to.have.length(3);
-				expect($('.chzn-results li', chosen)).to.have.length(2);
+				expect($('.chosen-results li', chosen)).to.have.length(2);
 
 				expect($('option', select).eq(1).text()).to.equal('toyota tundra');
 				expect($('option', select).eq(2).text()).to.equal('toyota camery');
 
-				expect($('.chzn-results li', chosen).eq(0).text()).to.equal('toyota tundra');
-				expect($('.chzn-results li', chosen).eq(1).text()).to.equal('toyota camery');
+				expect($('.chosen-results li', chosen).eq(0).text()).to.equal('toyota tundra');
+				expect($('.chosen-results li', chosen).eq(1).text()).to.equal('toyota camery');
 
-				expect($('.chzn-choices li.search-choice',chosen)).to.have.length(1);
-				expect($('.chzn-choices li.search-choice',chosen).text()).to.equal('toyota tundra');
+				expect($('.chosen-choices li.search-choice',chosen)).to.have.length(1);
+				expect($('.chosen-choices li.search-choice',chosen).text()).to.equal('toyota tundra');
 				//weird how chai doesn't make ['1'] === ['1']
 				expect(select.val()[0]).to.have.equal(selectedIds[0]);
 			});
@@ -590,17 +590,17 @@ describe('chosen.ajaxaddition', function(){
 				this.server.respond();
 
 				expect($('option', select)).to.have.length(3);
-				expect($('.chzn-results li', chosen).not('.no-results')).to.have.length(2);
+				expect($('.chosen-results li', chosen).not('.no-results')).to.have.length(2);
 
 				expect($('option', select).eq(1).text()).to.equal('toyota tundra');
 				expect($('option', select).eq(2).text()).to.equal('toyota camery');
 
-				expect($('.chzn-results li', chosen).not('.no-results').eq(0).text()).to.equal('toyota tundra');
-				expect($('.chzn-results li', chosen).not('.no-results').eq(1).text()).to.equal('toyota camery');
+				expect($('.chosen-results li', chosen).not('.no-results').eq(0).text()).to.equal('toyota tundra');
+				expect($('.chosen-results li', chosen).not('.no-results').eq(1).text()).to.equal('toyota camery');
 
-				expect($('.chzn-choices li.search-choice',chosen)).to.have.length(2);
-				expect($('.chzn-choices li.search-choice',chosen).eq(0).text()).to.equal('toyota tundra');
-				expect($('.chzn-choices li.search-choice',chosen).eq(1).text()).to.equal('toyota camery');
+				expect($('.chosen-choices li.search-choice',chosen)).to.have.length(2);
+				expect($('.chosen-choices li.search-choice',chosen).eq(0).text()).to.equal('toyota tundra');
+				expect($('.chosen-choices li.search-choice',chosen).eq(1).text()).to.equal('toyota camery');
 
 				//weird how chai doesn't make ['1','2'] === ['1','2']
 				expect(select.val()[0]).to.have.equal(selectedIds[0]);
@@ -636,7 +636,7 @@ describe('chosen.ajaxaddition', function(){
 			this.server.respondWith(
 				'/search',
 				[200, { 'Content-Type': 'application/json' },
-				'{ "q": "banana", "results": [{"id":1, "text":"Chiquita"}]}']
+				'{ "q": "Ala", "results": [{"id":1, "text":"Alabama"}]}']
 			);
 			select = $('select', space).ajaxChosen({
 				dataType: 'json',
@@ -646,62 +646,62 @@ describe('chosen.ajaxaddition', function(){
 			chosen = select.next();
 
 			chosen.trigger('click');
-			input = $('input', chosen).val('banan');
+			input = $('input', chosen).val('Al');
 			key = $.Event('keyup');
-			key.which = 32;
+			key.which = 97;
 			input.trigger(key);
 			this.clock.tick(750);
 			this.server.respond();
 
 			expect($('option',select)).to.have.length(2);//empty + 1 result
 			//not results in selected
-			expect($('.chzn-choices li.search-choice',chosen)).to.have.length(0);
+			expect($('.chosen-choices li.search-choice',chosen)).to.have.length(0);
 			//have the chiquita result
-			expect($('.chzn-results li', chosen).not('.no-results')).to.have.length(1);
-			expect($('.chzn-results li', chosen).not('.no-results').text()).to.equal('Chiquita');
+			expect($('.chosen-results li', chosen).not('.no-results')).to.have.length(1);
+			expect($('.chosen-results li', chosen).not('.no-results').text()).to.equal('Alabama');
 			//click on result to add to selected items
-			$('.chzn-results li',chosen).not('.no-results').eq(0).addClass('active-result');
-			$('.chzn-results li',chosen).not('.no-results').eq(0).trigger('mouseup');
+			$('.chosen-results li',chosen).not('.no-results').eq(0).addClass('active-result');
+			$('.chosen-results li',chosen).not('.no-results').eq(0).trigger('mouseup');
 			//verify that it has been added to the selected list
 			expect($('option:selected',select)).to.have.length(1);
-			expect($('option:selected',select).text()).to.equal('Chiquita');
-			expect($('.chzn-choices li.search-choice',chosen)).to.have.length(1);
-			expect($('.chzn-choices li.search-choice',chosen).text()).to.equal('Chiquita');
+			expect($('option:selected',select).text()).to.equal('Alabama');
+			expect($('.chosen-choices li.search-field',chosen)).to.have.length(1);
+			expect($('.chosen-choices li.search-choice',chosen).text()).to.equal('Alabama');
 
 			this.server.responses.length = 0;
 			this.server.respondWith(
 				'/search',
 				[200, { 'Content-Type': 'application/json' },
-				'{ "q": "ferr", "results": [{"id":2, "text":"Ferrari"}]}']
+				'{ "q": "ala", "results": [{"id":2, "text":"Alaska"}]}']
 			);
 			chosen.trigger('click');
-			input = $('input', chosen).val('fer');
+			input = $('input', chosen).val('al');
 			key = $.Event('keyup');
-			key.which = 82;
+			key.which = 97;
 			input.trigger(key);
 			this.clock.tick(750);
 			this.server.respond();
 
 			//select box still has chiquita selected
 			expect($('option:selected',select)).to.have.length(1);
-			expect($('option:selected',select).text()).to.equal('Chiquita');
+			expect($('option:selected',select).text()).to.equal('Alabama');
 			//have the original result
-			expect($('.chzn-choices li.search-choice',chosen)).to.have.length(1);
-			expect($('.chzn-choices li.search-choice',chosen).text()).to.equal('Chiquita');
+			expect($('.chosen-choices li.search-choice',chosen)).to.have.length(1);
+			expect($('.chosen-choices li.search-choice',chosen).text()).to.equal('Alabama');
 			//notice how we have two results and one is 'active-result' and the other is 'result-selected'
-			expect($('.chzn-results li.result-selected', chosen)).to.have.length(1);
-			expect($('.chzn-results li.result-selected', chosen).text()).to.equal('Chiquita');
-			expect($('.chzn-results li.active-result', chosen).not('.no-results')).to.have.length(1);
-			expect($('.chzn-results li.active-result', chosen).not('.no-results').text()).to.equal('Ferrari');
+			expect($('.chosen-results li.result-selected', chosen)).to.have.length(1);
+			expect($('.chosen-results li.result-selected', chosen).text()).to.equal('Alabama');
+			expect($('.chosen-results li.active-result', chosen).not('.no-results')).to.have.length(1);
+			expect($('.chosen-results li.active-result', chosen).not('.no-results').text()).to.equal('Alaska');
 			//click on result to add to selected items
-			$('.chzn-results li.active-result', chosen).not('.no-results').eq(0).addClass('active-result');
-			$('.chzn-results li.active-result', chosen).not('.no-results').eq(0).trigger('mouseup');
+			$('.chosen-results li.active-result', chosen).not('.no-results').eq(0).addClass('active-result');
+			$('.chosen-results li.active-result', chosen).not('.no-results').eq(0).trigger('mouseup');
 
 			//verify selected results
 			expect($('option:selected',select)).to.have.length(2);
-			expect($('.chzn-choices li.search-choice',chosen)).to.have.length(2);
-			var expectedResults = ['Chiquita', 'Ferrari'];
-			$('.chzn-choices li.search-choice', chosen).each(function(i, elem){
+			expect($('.chosen-choices li.search-choice',chosen)).to.have.length(2);
+			var expectedResults = ['Alabama', 'Alaska'];
+			$('.chosen-choices li.search-choice', chosen).each(function(i, elem){
 				expect($(elem).text()).to.equal(expectedResults[i]);
 			});
 			$('option:selected',select).each(function(i, elem){
