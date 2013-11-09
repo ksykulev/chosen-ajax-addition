@@ -23,6 +23,13 @@ Some More Todos:
 * Move q to higher scope the server doesn't have to pass it back in request
 * ~~Add check for ajaxChosenOptions being undefined~~
 
+Branches
+--------
+Master will attempt to keep up with the latest version of chosen
+
+lt-1_0 - this branch is for people who haven't updated to chosen version 1.0 yet. I will attempt to port all the changes made in master to this branch as well.
+
+
 Example Usage
 -------------
 ```javascript
