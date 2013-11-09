@@ -119,7 +119,7 @@
 				});
 			}
 			//update chosen
-			select.trigger("liszt:updated");
+			select.trigger("chosen:updated");
 			//right key, for highlight options after ajax is performed
 			keyRight = $.Event('keyup');
 			keyRight.which = 39;
@@ -143,7 +143,7 @@
 			loadingImg = options.loadingImg;
 		}
 
-		$('.chzn-search > input, .chzn-choices .search-field input', chosen).bind('keyup', function (e) {
+		$('.chosen-search > input, .chosen-choices .search-field input', chosen).bind('keyup', function (e) {
 			var field = $(this),
 					q = field.val();
 
