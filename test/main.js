@@ -61,6 +61,56 @@ describe('chosen.ajaxaddition', function(){
 		clock.restore();
 		expect(server.requests).to.have.length(0);
 	});
+    it("should not fire of ajax if the whole string has been deleted", function() {
+        var chosen,
+            input,
+            key,
+            server = sinon.fakeServer.create(),
+            clock = sinon.useFakeTimers(),
+            response;
+            
+        response = { q: "fer", results: [{ id: 1, text: "ferrari" }] };
+		server.respondWith(
+			'/search',
+			[200, { 'Content-Type': 'application/json' },
+            JSON.stringify(response)]
+		);
+
+		chosen = $('select', space).ajaxChosen({
+			dataType: 'json',
+			type: 'POST',
+			url:'/search'
+		},{}).next();
+        chosen.trigger('click');
+        input = $('input', chosen).val('fe');
+
+        key = $.Event('keyup');
+		key.which = 82;
+        input.trigger(key);
+
+        clock.tick(750);
+        server.respond();
+
+        expect(input.val()).to.equal('fer');
+        
+        key = $.Event('keyup');
+        key.which = 8;
+
+        // Delete everything from input
+        var query = 'fer';
+        for(var i = query.length - 1; i >= 0; --i) {
+          input.val(query.substr(0, i));
+          input.trigger(key);
+        }
+
+        clock.tick(750);
+
+        expect(server.requests).to.have.length(1);
+        expect(input.val()).to.be.empty;
+
+        server.restore();
+        clock.restore();
+    });
 	describe('options', function(){
 		beforeEach(function(){
 			this.server = sinon.fakeServer.create();

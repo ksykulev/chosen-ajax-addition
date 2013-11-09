@@ -180,6 +180,7 @@
 			}
 			//backout if nothing is in input box
 			if ($.trim(q).length === 0) {
+			    if (throttle) { clearTimeout(throttle); }
 				return false;
 			}
 
