@@ -41,7 +41,8 @@
 					selected, valuesArray, valuesHash = {},
 					requestQueueLength = requestQueue.length,
 					old = false,
-					keep = false;
+					keep = false,
+					inputEmptied = false;
 			if (typing) {
 				//server returned a response, but it's about to become an older response
 				//so discard it and wait until the user is done typing
@@ -74,6 +75,8 @@
 					return false;
 				}
 			}
+			//while the request was processing did the user empty the input box
+			inputEmptied = $.trim(input.val()).length === 0;
 
 			//if additional processing needs to occur on the returned json
 			if ('processItems' in options && $.isFunction(options.processItems)) {
@@ -89,7 +92,7 @@
 			//.chzn-choices is only present with multi-selects
 			selected = $('option:selected', select).not(':empty').clone().attr('selected', true);
 			//saving values for deduplication
-			if(!$.isArray(select.val())) {
+			if (!$.isArray(select.val())) {
 				valuesArray = [select.val()];
 			} else {
 				valuesArray = select.val();
@@ -103,20 +106,22 @@
 			//appending this even on single select in the event the user changes their mind and input is blurred. Keeps selected option selected
 			selected.appendTo(select);
 
-			if ($.isArray(items)) {
-				//array of kv pairs [{id:'', text:''}...]
-				$.each(items, function (i, opt) {
-					if(typeof valuesHash[opt.id] === 'undefined') {
-						$('<option value="' + opt.id + '">' + opt.text + '</option>').appendTo(select);
-					}
-				});
-			} else {
-				//hash of kv pairs {'id':'text'...}
-				$.each(items, function (value, text) {
-					if(typeof valuesHash[value] === 'undefined') {
-						$('<option value="' + value + '">' + text + '</option>').appendTo(select);
-					}
-				});
+			if (!inputEmptied) {
+				if ($.isArray(items)) {
+					//array of kv pairs [{id:'', text:''}...]
+					$.each(items, function (i, opt) {
+						if (typeof valuesHash[opt.id] === 'undefined') {
+							$('<option value="' + opt.id + '">' + opt.text + '</option>').appendTo(select);
+						}
+					});
+				} else {
+					//hash of kv pairs {'id':'text'...}
+					$.each(items, function (value, text) {
+						if (typeof valuesHash[value] === 'undefined') {
+							$('<option value="' + value + '">' + text + '</option>').appendTo(select);
+						}
+					});
+				}
 			}
 			//update chosen
 			select.trigger("chosen:updated");
@@ -124,7 +129,7 @@
 			keyRight = $.Event('keyup');
 			keyRight.which = 39;
 			//highlight
-			input.val(data.q).trigger(keyRight).get(0).style.background = inputBG;
+			input.val(!inputEmptied ? data.q : '').trigger(keyRight).get(0).style.background = inputBG;
 
 			if (items.length > 0) {
 				$('.no-results', chosen).hide();
@@ -180,7 +185,7 @@
 			}
 			//backout if nothing is in input box
 			if ($.trim(q).length === 0) {
-			    if (throttle) { clearTimeout(throttle); }
+				if (throttle) { clearTimeout(throttle); }
 				return false;
 			}
 

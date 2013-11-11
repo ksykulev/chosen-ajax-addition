@@ -48,6 +48,7 @@ describe('chosen.ajaxaddition', function(){
 			url:'/search'
 		},{}).next();
 		chosen.trigger('click');
+		clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 		input = $('input', chosen).val('word');
 
 		for(var i=0, len=keyCodes.length; i < len; i++){
@@ -61,19 +62,19 @@ describe('chosen.ajaxaddition', function(){
 		clock.restore();
 		expect(server.requests).to.have.length(0);
 	});
-    it("should not fire of ajax if the whole string has been deleted", function() {
-        var chosen,
-            input,
-            key,
-            server = sinon.fakeServer.create(),
-            clock = sinon.useFakeTimers(),
-            response;
-            
-        response = { q: "fer", results: [{ id: 1, text: "ferrari" }] };
+	it("should not fire of ajax if the whole string has been deleted", function() {
+		var chosen,
+				input,
+				key,
+				server = sinon.fakeServer.create(),
+				clock = sinon.useFakeTimers(),
+				response;
+
+		response = { q: "fer", results: [{ id: 1, text: "ferrari" }] };
 		server.respondWith(
 			'/search',
 			[200, { 'Content-Type': 'application/json' },
-            JSON.stringify(response)]
+			JSON.stringify(response)]
 		);
 
 		chosen = $('select', space).ajaxChosen({
@@ -81,36 +82,148 @@ describe('chosen.ajaxaddition', function(){
 			type: 'POST',
 			url:'/search'
 		},{}).next();
-        chosen.trigger('click');
-        input = $('input', chosen).val('fe');
 
-        key = $.Event('keyup');
+		chosen.trigger('click');
+		clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
+		input = $('input', chosen).val('fe');
+
+		key = $.Event('keyup');
 		key.which = 82;
-        input.trigger(key);
+		input.trigger(key);
 
-        clock.tick(750);
-        server.respond();
+		clock.tick(750);
+		server.respond();
 
-        expect(input.val()).to.equal('fer');
-        
-        key = $.Event('keyup');
-        key.which = 8;
+		expect(input.val()).to.equal('fer');
 
-        // Delete everything from input
-        var query = 'fer';
-        for(var i = query.length - 1; i >= 0; --i) {
-          input.val(query.substr(0, i));
-          input.trigger(key);
-        }
+		key = $.Event('keyup');
+		key.which = 8;
 
-        clock.tick(750);
+		// Delete everything from input
+		var query = 'fer';
+		for(var i = query.length - 1; i >= 0; --i) {
+			input.val(query.substr(0, i));
+			input.trigger(key);
+		}
 
-        expect(server.requests).to.have.length(1);
-        expect(input.val()).to.be.empty;
+		clock.tick(750);
 
-        server.restore();
-        clock.restore();
-    });
+		expect(server.requests).to.have.length(1);
+		expect(input.val()).to.be.empty;
+
+		server.restore();
+		clock.restore();
+	});
+	it("should allow the last character to be deleted", function(){
+		var chosen,
+				input,
+				key,
+				returnQuery,
+				clock = sinon.useFakeTimers(),
+				xhr = sinon.useFakeXMLHttpRequest(),
+				requests = [];
+
+		xhr.onCreate = function (xhr) { requests.push(xhr) };
+
+		chosen = $('select', space).ajaxChosen({
+			dataType: 'json',
+			type: 'POST',
+			url: '/search'
+		},{}).next();
+
+		chosen.trigger('click');
+		clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
+
+		input = $('input', chosen).val('monkey');
+		key = $.Event('keyup');
+		key.which = 32;
+		//fire off request
+		input.trigger(key);
+		clock.tick(750);
+		//respond
+		returnQuery = 'monkey';
+		requests[0].respond(200, { "Content-Type": "application/json" }, '{ "q": "'+returnQuery+'", "results": [{"id":1, "text":"first monkey"}]}');
+
+		//assert
+		expect(input.val()).to.equal(returnQuery);
+		expect($('.chosen-results li', chosen)).to.have.length(1);
+
+		//delete all but 1 character
+		input.val('m');
+		key = $.Event('keyup');
+		key.which = 32;
+		//fire request
+		input.trigger(key);
+		clock.tick(750);
+
+		//delete all characters before server responds
+		key = $.Event('keyup');
+		key.which = 8;
+		input.val('');
+		input.trigger(key);
+
+		returnQuery = 'm';
+		requests[1].respond(200, { "Content-Type": "application/json" }, '{ "q": "'+returnQuery+'", "results": [{"id":1, "text":"first monkey"}]}');
+
+		//assert that the text box is empty and doesn't contain the last response q
+		expect(input.val()).to.be.empty;
+		expect($('.chosen-results li', chosen)).to.have.length(0);
+	});
+	it("should allow the last character to be deleted with selected option", function(){
+		var chosen,
+				input,
+				key,
+				returnQuery,
+				clock = sinon.useFakeTimers(),
+				xhr = sinon.useFakeXMLHttpRequest(),
+				requests = [];
+
+		xhr.onCreate = function (xhr) { requests.push(xhr) };
+
+		selectedId = 'bananas';
+		$('select', space).append('<option value="bananas">monkeys eat</option>').val(selectedId);
+		chosen = $('select', space).ajaxChosen({
+			dataType: 'json',
+			type: 'POST',
+			url: '/search'
+		},{}).next();
+
+		expect($('select', space).val()).to.equal(selectedId);
+		expect($('select option', space)).to.have.length(2);
+
+		chosen.trigger('click');
+		clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
+		input = $('input', chosen).val('monkey');
+		key = $.Event('keyup');
+		key.which = 83;
+		input.trigger(key);
+		clock.tick(750);
+
+		requests[0].respond(200, { "Content-Type": "application/json" }, '{ "q": "monkeys", "results": [{"id":1, "text":"first monkey"}]}');
+		expect($('select', space).val()).to.equal(selectedId);
+		expect($('select option', space)).to.have.length(3);
+
+		//delete all but 1 character
+		input.val('m');
+		key = $.Event('keyup');
+		key.which = 32;
+		//fire request
+		input.trigger(key);
+		clock.tick(750);
+
+		//delete all characters before server responds
+		key = $.Event('keyup');
+		key.which = 8;
+		input.val('');
+		input.trigger(key);
+
+		requests[1].respond(200, { "Content-Type": "application/json" }, '{ "q": "m", "results": [{"id":1, "text":"first monkey"}]}');
+
+		//assert that the text box is empty and doesn't contain the last response q
+		expect(input.val()).to.be.empty;
+		expect($('select', space).val()).to.equal(selectedId);
+		expect($('select option', space)).to.have.length(2);
+	});
 	describe('options', function(){
 		beforeEach(function(){
 			this.server = sinon.fakeServer.create();
@@ -144,6 +257,7 @@ describe('chosen.ajaxaddition', function(){
 				loadingImg: 'img/l04der.gif'
 			}).next();
 			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 			input = $('input', chosen).val('banan');
 
 			expect(input.css('background-image')).to.match(/chosen-sprite\.png/i);
@@ -166,6 +280,7 @@ describe('chosen.ajaxaddition', function(){
 				url:'/search'
 			},ajaxChosenOptions).next();
 			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 			input = $('input', chosen).val('banan');
 			key = $.Event('keyup');
 			key.which = 65;
@@ -190,6 +305,7 @@ describe('chosen.ajaxaddition', function(){
 				url:'/search'
 			},ajaxChosenOptions).next();
 			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 			input = $('input', chosen).val('banan');
 			key = $.Event('keyup');
 			key.which = 65;
@@ -213,6 +329,7 @@ describe('chosen.ajaxaddition', function(){
 				url:'/abc123'
 			},ajaxChosenOptions).next();
 			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 			input = $('input', chosen).val('banan');
 			key = $.Event('keyup');
 			key.which = 65;
@@ -251,6 +368,7 @@ describe('chosen.ajaxaddition', function(){
 			},{}).next();
 
 			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 			input = $('input', chosen).val('banan');
 			key = $.Event('keyup');
 			key.which = 65;
@@ -275,6 +393,7 @@ describe('chosen.ajaxaddition', function(){
 				data: {'somekey':'somevalue'}
 			},{}).next();
 			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 			input = $('input', chosen).val('banana');
 			key = $.Event('keyup');
 			key.which = 65;
@@ -302,6 +421,7 @@ describe('chosen.ajaxaddition', function(){
 				data: [{'name':'keyboard', 'value':'cat'}]
 			},{}).next();
 			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 			input = $('input', chosen).val('banana');
 			key = $.Event('keyup');
 			key.which = 65;
@@ -343,6 +463,7 @@ describe('chosen.ajaxaddition', function(){
 				url: '/search'
 			},{}).next();
 			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 			input = $('input', chosen).val('banan');
 			key = $.Event('keyup');
 			key.which = 65;
@@ -366,6 +487,7 @@ describe('chosen.ajaxaddition', function(){
 				url: '/search'
 			},{}).next();
 			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 			input = $('input', chosen).val('banan');
 			key = $.Event('keyup');
 			key.which = 65;
@@ -390,6 +512,7 @@ describe('chosen.ajaxaddition', function(){
 				url: '/search'
 			},{}).next();
 			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 			input = $('input', chosen).val('banan');
 			key = $.Event('keyup');
 			key.which = 65;
@@ -414,6 +537,7 @@ describe('chosen.ajaxaddition', function(){
 		},{}).next();
 
 		chosen.trigger('click');
+		this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 		input = $('input', chosen).val('');
 		key = $.Event('keyup');
 		key.which = 32;
@@ -445,6 +569,7 @@ describe('chosen.ajaxaddition', function(){
 		},{}).next();
 
 		chosen.trigger('click');
+		this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 		input = $('input', chosen).val('Trailing Spaces are cool yo ');
 		key = $.Event('keyup');
 		key.which = 32;
@@ -470,6 +595,7 @@ describe('chosen.ajaxaddition', function(){
 			url: '/search'
 		},{}).next();
 		chosen.trigger('click').width('135px');
+		clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 
 		//first request
 		input = $('input', chosen).val('monkey');
@@ -489,6 +615,7 @@ describe('chosen.ajaxaddition', function(){
 
 		//go for the second request..
 		chosen.trigger('click');
+		clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 		input = $('input', chosen).val('banana');
 		key = $.Event('keyup');
 		key.which = 32;
@@ -540,6 +667,7 @@ describe('chosen.ajaxaddition', function(){
 				expect($('select option', space)).to.have.length(2);
 
 				chosen.trigger('click');
+				this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 				input = $('input', chosen).val('monkey');
 				key = $.Event('keyup');
 				key.which = 83;
@@ -587,7 +715,8 @@ describe('chosen.ajaxaddition', function(){
 
 				expect($('option', select)).to.have.length(3);
 
-				chosen.trigger('click');
+				$('input', chosen).trigger('click');
+				this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 				input = $('input', chosen).val('toyot');
 				key = $.Event('keyup');
 				key.which = 32;
@@ -631,7 +760,8 @@ describe('chosen.ajaxaddition', function(){
 
 				expect($('option', select)).to.have.length(3);
 
-				chosen.trigger('click');
+				$('input', chosen).trigger('click');
+				this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 				input = $('input', chosen).val('toyot');
 				key = $.Event('keyup');
 				key.which = 32;
@@ -666,15 +796,18 @@ describe('chosen.ajaxaddition', function(){
 		it('should bind the keyup event to the input', function(){
 			var chosen,
 					input;
+			this.clock = sinon.useFakeTimers();
 			chosen = $('select', space).ajaxChosen({
 				dataType: 'json',
 				type: 'POST',
 				url: '/search'
 			},{}).next();
-			chosen.trigger('click');
+			$('input', chosen).trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 
 			input = $('input', chosen).val('');
 			expect($._data( input[0], "events" )['keyup']).to.have.length(2);
+			this.clock.restore()
 		});
 		it('should keep the options previously selected', function(){
 			var select,
@@ -695,7 +828,8 @@ describe('chosen.ajaxaddition', function(){
 			},{});
 			chosen = select.next();
 
-			chosen.trigger('click');
+			$('input', chosen).trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 			input = $('input', chosen).val('Al');
 			key = $.Event('keyup');
 			key.which = 97;
@@ -725,6 +859,7 @@ describe('chosen.ajaxaddition', function(){
 				'{ "q": "ala", "results": [{"id":2, "text":"Alaska"}]}']
 			);
 			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 			input = $('input', chosen).val('al');
 			key = $.Event('keyup');
 			key.which = 97;
@@ -798,6 +933,7 @@ describe('chosen.ajaxaddition', function(){
 				url: '/search'
 			},{}).next();
 			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 
 			//first request
 			input = $('input', chosen).val('monkey');
@@ -847,6 +983,7 @@ describe('chosen.ajaxaddition', function(){
 				url: '/search'
 			},{}).next();
 			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 
 			//first request
 			input = $('input', chosen).val('monkey');
@@ -891,6 +1028,7 @@ describe('chosen.ajaxaddition', function(){
 				url: '/search'
 			},{}).next();
 			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 
 			//first request
 			input = $('input', chosen).val('monkey');
