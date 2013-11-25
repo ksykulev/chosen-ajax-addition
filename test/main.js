@@ -809,6 +809,76 @@ describe('chosen.ajaxaddition', function(){
 			expect($._data( input[0], "events" )['keyup']).to.have.length(2);
 			this.clock.restore()
 		});
+        it('should allow the last character to be deleted with selected options', function() {
+            var select,
+                chosen,
+                input,
+                key;
+
+            this.server = sinon.fakeServer.create();
+            this.clock = sinon.useFakeTimers();
+            this.server.respondWith(
+                '/search',
+                [200, { 'Content-Type': 'application/json' },
+                '{ "q": "Fe", "results": [{"id": 1, "text": "Ferrari"}] }']
+            );
+            select = $('select', space).ajaxChosen({
+              dataType: 'json',
+              type: 'POST',
+              url: '/search'
+            });
+            chosen = select.next();
+
+            $('input', chosen).trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
+            input = $('input', space).val('F');
+            key = $.Event('keyup');
+            key.which = 69;
+            input.trigger(key);
+            this.clock.tick(750);
+            this.server.respond();
+
+            expect(input.val()).to.equal("Fe");
+			expect($('option',select)).to.have.length(2);//empty + 1 result
+            // not results selected
+            expect($('.chosen-choices li.search-choice', chosen)).to.have.length(0);
+            // click on result to add to selected items
+			$('.chosen-results li',chosen).not('.no-results').eq(0).addClass('active-result');
+			$('.chosen-results li',chosen).not('.no-results').eq(0).trigger('mouseup');
+			//verify that it has been added to the selected list
+			expect($('option:selected',select)).to.have.length(1);
+			expect($('option:selected',select).text()).to.equal('Ferrari');
+
+			this.server.responses.length = 0;
+            this.server.respondWith(
+                '/search',
+                [200, { 'Content-Type': 'application/json' },
+                '{ "q": "La", "results": [{"id": 2, "text": "Lamborgini"}] }']
+            );
+          
+            $('input', chosen).trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
+            input.val('L');
+            key = $.Event('keyup');
+            key.which = 65;
+            input.trigger(key)
+            this.clock.tick(750);
+
+            // Remove everything from input before server respond
+            key = $.Event('keyup');
+            key.which = 8;
+            input.val('');
+            input.trigger(key);
+            this.server.respond();
+            
+            expect(input.val()).to.be.empty;
+
+			//verify that it still has options selected
+			expect($('option:selected',select)).to.have.length(1);
+			expect($('option:selected',select).text()).to.equal('Ferrari');
+            this.clock.restore();
+            this.server.restore();
+        })
 		it('should keep the options previously selected', function(){
 			var select,
 					chosen,
