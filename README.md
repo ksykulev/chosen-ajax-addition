@@ -130,6 +130,10 @@ Vendor
 
 [json2](https://github.com/douglascrockford/JSON-js) - JSON.stringify
 
+Special Thanks
+--------------
+
+* [lowski](https://github.com/lowski)
 
 License
 -------
