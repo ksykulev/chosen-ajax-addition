@@ -149,11 +149,23 @@
 		}
 
 		$('.chosen-search > input, .chosen-choices .search-field input', chosen).bind('keyup', function (e) {
+      processValue.call(this, e);
+    });
+    
+    $('.chosen-search > input, .chosen-choices .search-field input', chosen).bind('paste', function (e) {
+      var that = this;
+      setTimeout(function() {
+        processValue.call(that, e);
+      }, 50);
+    });
+    
+    function processValue(e) {
 			var field = $(this),
 					q = field.val();
 
 			//don't fire ajax if...
-			if (
+			if ((e.type === 'paste' && field.is(':not(:focus)')) ||
+        (e.which && (
 				(e.which ===  9)  ||//Tab
 				(e.which === 13)  ||//Enter
 				(e.which === 16)  ||//Shift
@@ -178,7 +190,7 @@
 				(e.which === 93)  ||//WIN Menu
 				(e.which === 224) ||//command key
 				(e.which >= 112 && e.which <= 123)//F1 to F12
-			) { return false; }
+			))) { return false; }
 			//backout of ajax dynamically
 			if ('useAjax' in options && $.isFunction(options.useAjax)) {
 				if (!options.useAjax(e)) { return false; }
@@ -221,7 +233,7 @@
 				typing = false;
 				$.ajax(ajaxOptions);
 			}, 700);
-		});
+		};
 
 		return select;
 	};
