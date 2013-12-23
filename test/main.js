@@ -67,62 +67,67 @@ describe('chosen.ajaxaddition', function(){
 				input,
 				server = sinon.fakeServer.create(),
 				clock = sinon.useFakeTimers();
-        
+
     server.respondWith(
       '/search',
       [200, { 'Content-Type': 'application/json' }, '{ q: "por", results: [{ id: 1, text: "porshe" }] }']
     );
-    
+
 		chosen = $('select', space).ajaxChosen({
 			dataType: 'json',
 			type: 'POST',
 			url:'/search'
 		},{}).next();
-    
+
     chosen.trigger('click');
     clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
     input = $('input', chosen).val('por');
-    
+
     input.focus();
     // Slow down Chrome to focus on the input field
     clock.tick(50);
-    
+    expect(input.is(":focus")).to.be.true;
+
     input.trigger('paste');
     clock.tick(750);
     expect(server.requests).to.have.length(1);
-    
-		server.respond();
-		expect(input.val()).to.equal('por');
-    
-		server.restore();
-		clock.restore();
+
+    server.respond();
+    expect(input.val()).to.equal('por');
+
+    server.restore();
+    clock.restore();
   });
   it("should not fire ajax if value was pasted without focused input field", function() {
     var chosen,
 				input,
         server = sinon.fakeServer.create(),
 				clock = sinon.useFakeTimers();
-        
+
     server.respondWith(
       '/search',
       [200, { 'Content-Type': 'application/json' }, '{ q: "", results: [] }']
-    );    
-    
+    );
+
 		chosen = $('select', space).ajaxChosen({
 			dataType: 'json',
 			type: 'POST',
 			url:'/search'
 		},{}).next();
-    
+
     chosen.trigger('click');
     clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
     input = $('input', chosen).val('por');
-    
+
+    input.blur();
+    clock.tick(50);
+    expect(input.is(":focus")).to.be.false;
+
     input.trigger('paste');
     expect(server.requests).to.have.length(0);
-    
+
     server.restore();
-		clock.restore();
+    clock.restore();
   });
 	it("should not fire of ajax if the whole string has been deleted", function() {
 		var chosen,

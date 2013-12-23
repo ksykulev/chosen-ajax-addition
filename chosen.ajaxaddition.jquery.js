@@ -148,17 +148,15 @@
 			loadingImg = options.loadingImg;
 		}
 
-		$('.chosen-search > input, .chosen-choices .search-field input', chosen).bind('keyup', function (e) {
-      processValue.call(this, e);
-    });
-    
-    $('.chosen-search > input, .chosen-choices .search-field input', chosen).bind('paste', function (e) {
-      var that = this;
-      setTimeout(function() {
-        processValue.call(that, e);
-      }, 50);
-    });
-    
+    $('.chosen-search > input, .chosen-choices .search-field input', chosen).
+      bind('keyup', processValue).
+      bind('paste', function (e) {
+        var that = this;
+        setTimeout(function() {
+          processValue.call(that, e);
+        }, 50);
+      });
+
     function processValue(e) {
 			var field = $(this),
 					q = field.val();
