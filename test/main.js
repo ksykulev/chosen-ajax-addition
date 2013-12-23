@@ -62,6 +62,74 @@ describe('chosen.ajaxaddition', function(){
 		clock.restore();
 		expect(server.requests).to.have.length(0);
 	});
+
+	it("should fire ajax if non empty value was pasted to the input field", function() {
+		var chosen,
+				input,
+				server = sinon.fakeServer.create(),
+				clock = sinon.useFakeTimers();
+
+		server.respondWith(
+			'/search',
+			[200, { 'Content-Type': 'application/json' }, '{ q: "por", results: [{ id: 1, text: "porshe" }] }']
+		);
+
+		chosen = $('select', space).ajaxChosen({
+			dataType: 'json',
+			type: 'POST',
+			url:'/search'
+		},{}).next();
+
+		chosen.trigger('click');
+		clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
+		input = $('input', chosen).val('por');
+
+		input.focus();
+		// Slow down Chrome to focus on the input field
+		clock.tick(50);
+		expect(input.is(":focus")).to.be.true;
+
+		input.trigger('paste');
+		clock.tick(750);
+		expect(server.requests).to.have.length(1);
+
+		server.respond();
+		expect(input.val()).to.equal('por');
+
+		server.restore();
+		clock.restore();
+	});
+	it("should not fire ajax if value was pasted without focused input field", function() {
+		var chosen,
+				input,
+				server = sinon.fakeServer.create(),
+				clock = sinon.useFakeTimers();
+
+		server.respondWith(
+			'/search',
+			[200, { 'Content-Type': 'application/json' }, '{ q: "", results: [] }']
+		);
+
+		chosen = $('select', space).ajaxChosen({
+			dataType: 'json',
+			type: 'POST',
+			url:'/search'
+		},{}).next();
+
+		chosen.trigger('click');
+		clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
+		input = $('input', chosen).val('por');
+
+		input.blur();
+		clock.tick(50);
+		expect(input.is(":focus")).to.be.false;
+
+		input.trigger('paste');
+		expect(server.requests).to.have.length(0);
+
+		server.restore();
+		clock.restore();
+	});
 	it("should not fire of ajax if the whole string has been deleted", function() {
 		var chosen,
 				input,
@@ -176,7 +244,8 @@ describe('chosen.ajaxaddition', function(){
 				returnQuery,
 				clock = sinon.useFakeTimers(),
 				xhr = sinon.useFakeXMLHttpRequest(),
-				requests = [];
+				requests = [],
+				selectedId;
 
 		xhr.onCreate = function (xhr) { requests.push(xhr) };
 

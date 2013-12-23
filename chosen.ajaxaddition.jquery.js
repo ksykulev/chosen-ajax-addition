@@ -148,38 +148,49 @@
 			loadingImg = options.loadingImg;
 		}
 
-		$('.chzn-search > input, .chzn-choices .search-field input', chosen).bind('keyup', function (e) {
+		$('.chzn-search > input, .chzn-choices .search-field input', chosen).
+			bind('keyup', processValue).
+			bind('paste', function(e) {
+				var that = this;
+				setTimeout(function() {
+					processValue.call(that, e);
+				}, 50);
+			});
+
+		function processValue(e) {
 			var field = $(this),
 					q = field.val();
 
 			//don't fire ajax if...
-			if (
-				(e.which ===  9)  ||//Tab
-				(e.which === 13)  ||//Enter
-				(e.which === 16)  ||//Shift
-				(e.which === 17)  ||//Ctrl
-				(e.which === 18)  ||//Alt
-				(e.which === 19)  ||//Pause, Break
-				(e.which === 20)  ||//CapsLock
-				(e.which === 27)  ||//Esc
-				(e.which === 33)  ||//Page Up
-				(e.which === 34)  ||//Page Down
-				(e.which === 35)  ||//End
-				(e.which === 36)  ||//Home
-				(e.which === 37)  ||//Left arrow
-				(e.which === 38)  ||//Up arrow
-				(e.which === 39)  ||//Right arrow
-				(e.which === 40)  ||//Down arrow
-				(e.which === 44)  ||//PrntScrn
-				(e.which === 45)  ||//Insert
-				(e.which === 144) ||//NumLock
-				(e.which === 145) ||//ScrollLock
-				(e.which === 91)  ||//WIN Key (Start)
-				(e.which === 93)  ||//WIN Menu
-				(e.which === 224) ||//command key
-				(e.which >= 112 && e.which <= 123)//F1 to F12
-			) { return false; }
+			if ((e.type === 'paste' && field.is(':not(:focus)')) ||
+					(e.which && (
+					(e.which === 9) ||//Tab
+					(e.which === 13) ||//Enter
+					(e.which === 16) ||//Shift
+					(e.which === 17) ||//Ctrl
+					(e.which === 18) ||//Alt
+					(e.which === 19) ||//Pause, Break
+					(e.which === 20) ||//CapsLock
+					(e.which === 27) ||//Esc
+					(e.which === 33) ||//Page Up
+					(e.which === 34) ||//Page Down
+					(e.which === 35) ||//End
+					(e.which === 36) ||//Home
+					(e.which === 37) ||//Left arrow
+					(e.which === 38) ||//Up arrow
+					(e.which === 39) ||//Right arrow
+					(e.which === 40) ||//Down arrow
+					(e.which === 44) ||//PrntScrn
+					(e.which === 45) ||//Insert
+					(e.which === 144) ||//NumLock
+					(e.which === 145) ||//ScrollLock
+					(e.which === 91) ||//WIN Key (Start)
+					(e.which === 93) ||//WIN Menu
+					(e.which === 224) ||//command key
+					(e.which >= 112 && e.which <= 123)//F1 to F12
+			))) { return false; }
 			//backout of ajax dynamically
+
 			if ('useAjax' in options && $.isFunction(options.useAjax)) {
 				if (!options.useAjax(e)) { return false; }
 			}
@@ -221,7 +232,7 @@
 				typing = false;
 				$.ajax(ajaxOptions);
 			}, 700);
-		});
+		};
 
 		return select;
 	};
