@@ -243,7 +243,8 @@ describe('chosen.ajaxaddition', function(){
 				returnQuery,
 				clock = sinon.useFakeTimers(),
 				xhr = sinon.useFakeXMLHttpRequest(),
-				requests = [];
+				requests = [],
+				selectedId;
 
 		xhr.onCreate = function (xhr) { requests.push(xhr) };
 
