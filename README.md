@@ -135,6 +135,12 @@ Special Thanks
 
 * [lowski](https://github.com/lowski)
 
+
+Contributing
+------------
+Please submit all bugs and feature requests as an issue. Pull requests are always welcome, however please ensure the proper tests are added. I would like to keep this project as well tested as possible.
+
+
 License
 -------
 Standard MIT
