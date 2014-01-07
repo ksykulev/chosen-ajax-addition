@@ -17,7 +17,8 @@
 				throttle = false,
 				requestQueue = [],
 				typing = false,
-				loadingImg = '/img/loading.gif';
+				loadingImg = '/img/loading.gif',
+				minLength = 1;
 
 		if ($('option', select).length === 0) {
 			//adding empty option so you don't have to, and chosen can perform search correctly
@@ -147,6 +148,10 @@
 		if ('loadingImg' in options) {
 			loadingImg = options.loadingImg;
 		}
+		//set minimum length that will trigger autocomplete
+    		if ('minLength' in options) {
+      			minLength = options.minLength;
+    		}
 
     $('.chosen-search > input, .chosen-choices .search-field input', chosen).
       bind('keyup', processValue).
@@ -193,16 +198,16 @@
 			if ('useAjax' in options && $.isFunction(options.useAjax)) {
 				if (!options.useAjax(e)) { return false; }
 			}
+			//hide no results
+			$('.no-results', chosen).hide();
 			//backout if nothing is in input box
-			if ($.trim(q).length === 0) {
+			if ($.trim(q).length < minLength) {
 				if (throttle) { clearTimeout(throttle); }
 				return false;
 			}
 
 			typing = true;
 
-			//hide no results
-			$('.no-results', chosen).hide();
 			//add query to data
 			if ($.isArray(ajaxOptions.data)) {
 				//array
