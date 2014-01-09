@@ -43,7 +43,8 @@
 					requestQueueLength = requestQueue.length,
 					old = false,
 					keep = false,
-					inputEmptied = false;
+					inputEmptied = false,
+					inputEmptiedValue = '';
 			if (typing) {
 				//server returned a response, but it's about to become an older response
 				//so discard it and wait until the user is done typing
@@ -76,8 +77,9 @@
 					return false;
 				}
 			}
-			//while the request was processing did the user empty the input box
-			inputEmptied = $.trim(input.val()).length === 0;
+			//while the request was processing did the user "empty" the input box
+			inputEmptiedValue = $.trim(input.val());//if we have a minLength > 1 then we have to preserve the value (TODO::watch out for potential XSS/other breakages)
+			inputEmptied = inputEmptiedValue.length < minLength;
 
 			//if additional processing needs to occur on the returned json
 			if ('processItems' in options && $.isFunction(options.processItems)) {
@@ -130,7 +132,7 @@
 			keyRight = $.Event('keyup');
 			keyRight.which = 39;
 			//highlight
-			input.val(!inputEmptied ? data.q : '').trigger(keyRight).get(0).style.background = inputBG;
+			input.val(!inputEmptied ? data.q : inputEmptiedValue).trigger(keyRight).get(0).style.background = inputBG;
 
 			if (items.length > 0) {
 				$('.no-results', chosen).hide();
@@ -149,9 +151,9 @@
 			loadingImg = options.loadingImg;
 		}
 		//set minimum length that will trigger autocomplete
-    		if ('minLength' in options) {
-      			minLength = options.minLength;
-    		}
+		if ('minLength' in options) {
+			minLength = options.minLength;
+		}
 
     $('.chosen-search > input, .chosen-choices .search-field input', chosen).
       bind('keyup', processValue).

@@ -267,7 +267,7 @@ describe('chosen.ajaxaddition', function(){
 		input.trigger(key);
 		clock.tick(750);
 
-		requests[0].respond(200, { "Content-Type": "application/json" }, '{ "q": "monkeys", "results": [{"id":1, "text":"first monkey"}]}');
+		requests[0].respond(200, { "Content-Type": "application/json" }, '{ "q": "monkeys", "results": [{"id":1, "text":"first monkeys"}]}');
 		expect($('select', space).val()).to.equal(selectedId);
 		expect($('select option', space)).to.have.length(3);
 
@@ -292,11 +292,128 @@ describe('chosen.ajaxaddition', function(){
 		expect($('select', space).val()).to.equal(selectedId);
 		expect($('select option', space)).to.have.length(2);
 	});
+	it("should allow the minLength characters to be deleted", function(){
+		var chosen,
+				input,
+				key,
+				returnQuery,
+				clock = sinon.useFakeTimers(),
+				xhr = sinon.useFakeXMLHttpRequest(),
+				requests = [],
+				minLength = 3;
+
+		xhr.onCreate = function (xhr) { requests.push(xhr) };
+
+		chosen = $('select', space).ajaxChosen({
+			dataType: 'json',
+			type: 'POST',
+			url: '/search'
+		},{
+			minLength: minLength
+		}).next();
+
+		chosen.trigger('click');
+		clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
+
+		input = $('input', chosen).val('monkey');
+		key = $.Event('keyup');
+		key.which = 32;
+		//fire off request
+		input.trigger(key);
+		clock.tick(750);
+		//respond
+		returnQuery = 'monkey';
+		requests[0].respond(200, { "Content-Type": "application/json" }, '{ "q": "'+returnQuery+'", "results": [{"id":1, "text":"first monkey"}]}');
+
+		expect(input.val()).to.equal(returnQuery);
+		expect($('.chosen-results li', chosen)).to.have.length(1);
+
+		//delete all but minLength character
+		input.val('mon');
+		key = $.Event('keyup');
+		key.which = 32;
+		//fire request
+		input.trigger(key);
+		clock.tick(750);
+
+		//delete minLength - 1 characters before server responds
+		//if this still matches a result from the previous response, you are going to have it highlighted by chosen.
+		key = $.Event('keyup');
+		key.which = 8;
+		input.val('ba');
+		input.trigger(key);
+
+		returnQuery = 'mon';
+		requests[1].respond(200, { "Content-Type": "application/json" }, '{ "q": "'+returnQuery+'", "results": [{"id":1, "text":"first monkey"}]}');
+
+		//assert that the text box is empty and doesn't contain the last response q
+		expect(input.val()).to.equal('ba');
+		expect($('.chosen-results li:visible', chosen)).to.have.length(0);//no-results is hidden by processValue
+	});
+	it("should allow the minLength characters to be deleted with selected option", function(){
+		var chosen,
+				input,
+				key,
+				returnQuery,
+				clock = sinon.useFakeTimers(),
+				xhr = sinon.useFakeXMLHttpRequest(),
+				requests = [],
+				selectedId,
+				minLength = 3;
+
+		xhr.onCreate = function (xhr) { requests.push(xhr) };
+
+		selectedId = 'bananas';
+		$('select', space).append('<option value="bananas">monkeys eat</option>').val(selectedId);
+		chosen = $('select', space).ajaxChosen({
+			dataType: 'json',
+			type: 'POST',
+			url: '/search'
+		},{
+			minLength: 3
+		}).next();
+
+		expect($('select', space).val()).to.equal(selectedId);
+		expect($('select option', space)).to.have.length(2);
+
+		chosen.trigger('click');
+		clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
+		input = $('input', chosen).val('monkey');
+		key = $.Event('keyup');
+		key.which = 83;
+		input.trigger(key);
+		clock.tick(750);
+
+		requests[0].respond(200, { "Content-Type": "application/json" }, '{ "q": "monkeys", "results": [{"id":1, "text":"first monkeys"}]}');
+		expect($('select', space).val()).to.equal(selectedId);
+		expect($('select option', space)).to.have.length(3);
+
+		//delete all but minLength character
+		input.val('mon');
+		key = $.Event('keyup');
+		key.which = 32;
+		//fire request
+		input.trigger(key);
+		clock.tick(750);
+
+		//minLength - 1 characters before server responds
+		key = $.Event('keyup');
+		key.which = 8;
+		input.val('ba');
+		input.trigger(key);
+
+		requests[1].respond(200, { "Content-Type": "application/json" }, '{ "q": "mon", "results": [{"id":1, "text":"first monkey"}]}');
+
+		//assert that the text box is "empty" and doesn't contain the last response q
+		expect(input.val()).to.equal('ba');
+		expect($('select', space).val()).to.equal(selectedId);
+		expect($('select option', space)).to.have.length(2);
+	});
 	describe('options', function(){
 		beforeEach(function(){
 			this.server = sinon.fakeServer.create();
 			this.clock = sinon.useFakeTimers();
-			this.response = { q: "banana", complex: { results: [{id:1, text:"Chiquita"},{id:2, text:"Dole"}] }};
+			this.response = { q: "banana", complex: { results: [{id:1, text:"Chiquita banana"},{id:2, text:"Dole banana"}] }};
 			this.server.respondWith(
 				'/search',
 				[200, { 'Content-Type': 'application/json' },
@@ -406,6 +523,62 @@ describe('chosen.ajaxaddition', function(){
 
 			expect(ajaxChosenOptions.generateUrl.calledOnce).to.be.true;
 			expect(ajaxChosenOptions.generateUrl.calledWithExactly('banan')).to.be.true;
+			expect(this.server.requests).to.have.length(1);
+		});
+		it('should use a default minLength of 1 character', function(){
+			var chosen,
+					input,
+					key;
+
+			chosen = $('select', space).ajaxChosen({
+				dataType: 'json',
+				type: 'POST',
+				url:'/search'
+			},{}).next();
+			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
+
+			input = $('input', chosen).val('b');
+			key = $.Event('keyup');
+			key.which = 32;
+			input.trigger(key);
+			expect( $.trim(input.val()) ).to.have.length(1);
+			this.clock.tick(750);
+
+			expect(this.server.requests).to.have.length(1);
+		});
+		it('should not fire off server requests until minLength is met', function(){
+			var chosen,
+					input,
+					key,
+					minLength = 3;
+
+			chosen = $('select', space).ajaxChosen({
+				dataType: 'json',
+				type: 'POST',
+				url:'/search'
+			},{
+				minLength: minLength
+			}).next();
+			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
+
+			input = $('input', chosen);
+			for(var m = 0; m < minLength-1; m++){
+				input.val($.trim(input.val()) + 'b');
+				key = $.Event('keyup');
+				key.which = 32;
+				input.trigger(key);
+				expect( $.trim(input.val()) ).to.have.length(m+1);
+				this.clock.tick(750);
+				expect(this.server.requests).to.have.length(0);
+			}
+			input.val($.trim(input.val()) + 'b');
+			key = $.Event('keyup');
+			key.which = 32;
+			input.trigger(key);
+			expect( $.trim(input.val()) ).to.have.length(minLength);
+			this.clock.tick(750);
 			expect(this.server.requests).to.have.length(1);
 		});
 	});
@@ -547,7 +720,7 @@ describe('chosen.ajaxaddition', function(){
 			this.server.respondWith(
 				'/search',
 				[200, { 'Content-Type': 'application/json' },
-				'{ "q": "banana", "results": [{"id":1, "text":"Chiquita"}]}']
+				'{ "q": "banana", "results": [{"id":1, "text":"Chiquita banana"}]}']
 			);
 			chosen = $('select', space).ajaxChosen({
 				dataType: 'json',
@@ -564,6 +737,148 @@ describe('chosen.ajaxaddition', function(){
 			this.server.respond();
 			expect($('.no-results', chosen).is(':visible')).to.be.false;
 		});
+		it('should hide no results even if the input box is cleared', function(){
+			var chosen,
+					input,
+					key;
+
+			this.server.respondWith(
+				'/search',
+				[200, { 'Content-Type': 'application/json' },
+				'{ "q": "banana", "results": []}']
+			);
+			chosen = $('select', space).ajaxChosen({
+				dataType: 'json',
+				type: 'POST',
+				url: '/search'
+			},{}).next();
+			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
+
+			input = $('input', chosen).val('banan');
+			key = $.Event('keyup');
+			key.which = 65;
+			input.trigger(key);
+			this.clock.tick(750);
+			this.server.respond();
+			expect($('.no-results', chosen).is(':visible')).to.be.true;
+
+			input.val('');
+			key = $.Event('keyup');
+			key.which = 8;
+			input.trigger(key);
+			this.clock.tick(750);
+
+			expect($('.no-results', chosen).is(':visible')).to.be.false;
+		});
+		it('should not show no results if minLength is not met', function(){
+			var chosen,
+					input,
+					key,
+					minLength = 3;
+
+			chosen = $('select', space).ajaxChosen({
+				dataType: 'json',
+				type: 'POST',
+				url: '/search'
+			},{
+				minLength: minLength
+			}).next();
+			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
+
+			input = $('input', chosen).val('ba');
+			key = $.Event('keyup');
+			key.which = 32;
+			input.trigger(key);
+			expect( $.trim(input.val()) ).to.have.length(minLength - 1);
+
+			this.clock.tick(750);
+			expect($('.no-results', chosen).is(':visible')).to.be.false;
+		});
+		it('should hide no results when minLength is not met', function(){
+			var chosen,
+					input,
+					key,
+					minLength = 3;
+
+			this.server.respondWith(
+				'/search',
+				[200, { 'Content-Type': 'application/json' },
+				'{ "q": "banana", "results": []}']
+			);
+
+			chosen = $('select', space).ajaxChosen({
+				dataType: 'json',
+				type: 'POST',
+				url: '/search'
+			},{
+				minLength: minLength
+			}).next();
+			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
+
+			input = $('input', chosen).val('banan');
+			key = $.Event('keyup');
+			key.which = 65;
+			input.trigger(key);
+			this.clock.tick(750);
+			this.server.respond();
+			expect($('.no-results', chosen).is(':visible')).to.be.true;
+
+			input.val('ba');
+			key = $.Event('keyup');
+			key.which = 32;
+			input.trigger(key);
+			expect( $.trim(input.val()) ).to.have.length(minLength - 1);
+			this.clock.tick(750);
+
+			expect($('.no-results', chosen).is(':visible')).to.be.false;
+		});
+		it('should hide no results after chosen does a js match and when minLength is not met', function(){
+			var chosen,
+					input,
+					key,
+					minLength = 3;
+			this.server = sinon.fakeServer.create();
+			this.clock = sinon.useFakeTimers();
+
+			this.server.respondWith(
+				'/search',
+				[200, { 'Content-Type': 'application/json' },
+				'{ "q": "banana", "results": [{"id":1, "text":"banana yay"}]}']
+			);
+
+			chosen = $('select', space).ajaxChosen({
+				dataType: 'json',
+				type: 'POST',
+				url: '/search'
+			},{
+				minLength: minLength
+			}).next();
+			chosen.trigger('click');
+			this.clock.tick(100);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
+
+			input = $('input', chosen).val('banan');
+			key = $.Event('keyup');
+			key.which = 65;
+			input.trigger(key);
+			this.clock.tick(750);
+			this.server.respond();
+
+			expect($('.chosen-results li:not(.no-results)')).to.have.length(1);
+			expect($('.no-results', chosen).is(':visible')).to.be.false;
+
+			input.val('mo');
+			key = $.Event('keyup');
+			key.which = 32;
+			input.trigger(key);
+
+			expect( $.trim(input.val()) ).to.have.length(minLength - 1);
+			this.clock.tick(750);
+
+			expect($('.no-results', chosen).is(':visible')).to.be.false;
+		});
 		it('should display error if no processItems option is supplied and there is no results key in data returned', function(){
 			var chosen,
 					input,
@@ -572,7 +887,7 @@ describe('chosen.ajaxaddition', function(){
 			this.server.respondWith(
 				'/search',
 				[200, { 'Content-Type': 'application/json' },
-				'{ "q": "banana", "dataz": [{"id":1, "text":"Chiquita"}]}']
+				'{ "q": "banana", "dataz": [{"id":1, "text":"Chiquita banana"}]}']
 			);
 			chosen = $('select', space).ajaxChosen({
 				dataType: 'json',
@@ -662,7 +977,7 @@ describe('chosen.ajaxaddition', function(){
 			type: 'POST',
 			url: '/search'
 		},{}).next();
-		chosen.trigger('click').width('135px');
+		chosen.trigger('click');
 		clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
 
 		//first request
