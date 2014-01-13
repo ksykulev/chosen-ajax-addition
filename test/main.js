@@ -840,8 +840,6 @@ describe('chosen.ajaxaddition', function(){
 					input,
 					key,
 					minLength = 3;
-			this.server = sinon.fakeServer.create();
-			this.clock = sinon.useFakeTimers();
 
 			this.server.respondWith(
 				'/search',
@@ -878,6 +876,46 @@ describe('chosen.ajaxaddition', function(){
 			this.clock.tick(750);
 
 			expect($('.no-results', chosen).is(':visible')).to.be.false;
+		});
+		it("should hide the loading image if the user backs out of the searchd with minLength characters", function(){
+			var chosen,
+					input,
+					key,
+					minLength = 3;
+
+			chosen = $('select', space).ajaxChosen({
+				dataType: 'json',
+				type: 'POST',
+				url: '/search'
+			},{
+				minLength: minLength
+			}).next().width('100px');
+
+			chosen.trigger('click');
+			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
+
+			input = $('input', chosen).val('monkey');
+			key = $.Event('keyup');
+			key.which = 32;
+			//start processing request
+			input.trigger(key);
+			this.clock.tick(250);
+
+			//server request not fired yet
+			expect(this.server.requests).to.have.length(0);
+			//expect processing image
+			expect(input.prop('style')['background']).to.match(/loading\.gif/i);
+
+			//delete all but minLength character
+			input.val('mo');
+			key = $.Event('keyup');
+			key.which = 8;
+			//"process request"
+			input.trigger(key);
+			this.clock.tick(750);
+			expect(this.server.requests).to.have.length(0);
+			//processing image should be gone
+			expect(input.prop('style')['background']).to.not.match(/loading\.gif/i);
 		});
 		it('should display error if no processItems option is supplied and there is no results key in data returned', function(){
 			var chosen,

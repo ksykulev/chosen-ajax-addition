@@ -204,6 +204,7 @@
 			$('.no-results', chosen).hide();
 			//backout if nothing is in input box
 			if ($.trim(q).length < minLength) {
+				input.get(0).style.background = inputBG;
 				if (throttle) { clearTimeout(throttle); }
 				return false;
 			}
