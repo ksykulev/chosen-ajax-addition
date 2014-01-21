@@ -1,4 +1,5 @@
 <?php
+echo $_POST['data']['q'];
 $q = $_POST['data']['q'];
 
 $states = array(
