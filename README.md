@@ -63,7 +63,8 @@ $('select').ajaxChosen({
 	processItems: function(data){ return data.complex.results; }
 	useAjax: function(e){ return someCheckboxIsChecked(); },
 	generateUrl: function(q){ return '/search_page/'+somethingDynamical(); },
-	loadingImg: '../vendor/loading.gif'
+	loadingImg: '../vendor/loading.gif',
+	minLength: 2
 });
 </script>
 ```
@@ -81,6 +82,9 @@ __default__: nothing, uses the url specified in the ajax parameters
 
 __loadingImg__ -> path to the image you wish to show when the ajax call is processing
 __default__: '/img/loading.gif'
+
+__minLength__ -> The minimum number of characters required until ajax calls will be fired off to the server
+__default__: 1
 
 Expected Data Formats
 ---------------------

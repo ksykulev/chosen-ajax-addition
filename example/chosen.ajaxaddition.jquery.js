@@ -17,7 +17,8 @@
 				throttle = false,
 				requestQueue = [],
 				typing = false,
-				loadingImg = '/img/loading.gif';
+				loadingImg = '/img/loading.gif',
+				minLength = 1;
 
 		if ($('option', select).length === 0) {
 			//adding empty option so you don't have to, and chosen can perform search correctly
@@ -42,7 +43,8 @@
 					requestQueueLength = requestQueue.length,
 					old = false,
 					keep = false,
-					inputEmptied = false;
+					inputEmptied = false,
+					inputEmptiedValue = '';
 			if (typing) {
 				//server returned a response, but it's about to become an older response
 				//so discard it and wait until the user is done typing
@@ -75,8 +77,9 @@
 					return false;
 				}
 			}
-			//while the request was processing did the user empty the input box
-			inputEmptied = $.trim(input.val()).length === 0;
+			//while the request was processing did the user "empty" the input box
+			inputEmptiedValue = $.trim(input.val());//if we have a minLength > 1 then we have to preserve the value (TODO::watch out for potential XSS/other breakages)
+			inputEmptied = inputEmptiedValue.length < minLength;
 
 			//if additional processing needs to occur on the returned json
 			if ('processItems' in options && $.isFunction(options.processItems)) {
@@ -129,7 +132,7 @@
 			keyRight = $.Event('keyup');
 			keyRight.which = 39;
 			//highlight
-			input.val(!inputEmptied ? data.q : '').trigger(keyRight).get(0).style.background = inputBG;
+			input.val(!inputEmptied ? data.q : inputEmptiedValue).trigger(keyRight).get(0).style.background = inputBG;
 
 			if (items.length > 0) {
 				$('.no-results', chosen).hide();
@@ -146,6 +149,10 @@
 		options || (options = {});
 		if ('loadingImg' in options) {
 			loadingImg = options.loadingImg;
+		}
+		//set minimum length that will trigger autocomplete
+		if ('minLength' in options) {
+			minLength = options.minLength;
 		}
 
 		$('.chzn-search > input, .chzn-choices .search-field input', chosen).
@@ -190,19 +197,21 @@
 					(e.which >= 112 && e.which <= 123)//F1 to F12
 			))) { return false; }
 			//backout of ajax dynamically
+
 			if ('useAjax' in options && $.isFunction(options.useAjax)) {
 				if (!options.useAjax(e)) { return false; }
 			}
+			//hide no results
+			$('.no-results', chosen).hide();
 			//backout if nothing is in input box
-			if ($.trim(q).length === 0) {
+			if ($.trim(q).length < minLength) {
+				input.get(0).style.background = inputBG;
 				if (throttle) { clearTimeout(throttle); }
 				return false;
 			}
 
 			typing = true;
 
-			//hide no results
-			$('.no-results', chosen).hide();
 			//add query to data
 			if ($.isArray(ajaxOptions.data)) {
 				//array
