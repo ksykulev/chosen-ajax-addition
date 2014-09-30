@@ -20,6 +20,7 @@ Critical Todos:
 
 Some More Todos:
 
+* Add option to customize throttle timeout
 * Move q to higher scope the server doesn't have to pass it back in request
 * ~~Add check for ajaxChosenOptions being undefined~~
 
