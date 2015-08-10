@@ -58,10 +58,10 @@ $('select').ajaxChosen({
 	dataType: 'json',
 	type: 'POST',
 	url:'/search',
-	data: {'keyboard':'cat'} //Or can be [{'name':'keyboard', 'value':'cat'}]. chose your favorite, it handles both.
+	data: {'keyboard':'cat'}, //Or can be [{'name':'keyboard', 'value':'cat'}]. chose your favorite, it handles both.
 	success: function(data, textStatus, jqXHR){ doSomething(); }
 },{
-	processItems: function(data){ return data.complex.results; }
+	processItems: function(data){ return data.complex.results; },
 	useAjax: function(e){ return someCheckboxIsChecked(); },
 	generateUrl: function(q){ return '/search_page/'+somethingDynamical(); },
 	loadingImg: '../vendor/loading.gif',
