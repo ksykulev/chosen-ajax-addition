@@ -98,6 +98,31 @@ describe('chosen.ajaxaddition', function(){
     server.restore();
     clock.restore();
   });
+  
+  it("should keep the search term if nothing was passed from server", function() {
+    var chosen,
+      input,
+      server = sinon.fakeServer.create(),
+      clock = sinon.useFakeTimers();
+    server.respondWith(
+      '/search',
+      [200, { 'Content-Type': 'application/json' }, '{ results: [{ id: 1, text: "porshe" }] }']
+    );
+    chosen = $('select', space).ajaxChosen({
+      dataType: 'json',
+      type: 'POST',
+      url:'/search'
+    },{}).next();
+    chosen.trigger('click');
+    clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
+    input = $('input', chosen).val('por');
+    server.respond();
+    expect(input.val()).to.equal('por');
+
+    server.restore();
+    clock.restore();
+  });
+
   it("should not fire ajax if value was pasted without focused input field", function() {
     var chosen,
 				input,
@@ -1276,7 +1301,7 @@ describe('chosen.ajaxaddition', function(){
                 [200, { 'Content-Type': 'application/json' },
                 '{ "q": "La", "results": [{"id": 2, "text": "Lamborgini"}] }']
             );
-          
+
             $('input', chosen).trigger('click');
 			this.clock.tick(50);//AbstractChosen.prototype.input_focus -> fires focus logic after 50
             input.val('L');
@@ -1291,7 +1316,7 @@ describe('chosen.ajaxaddition', function(){
             input.val('');
             input.trigger(key);
             this.server.respond();
-            
+
             expect(input.val()).to.be.empty;
 
 			//verify that it still has options selected

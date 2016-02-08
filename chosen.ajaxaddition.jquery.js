@@ -132,7 +132,15 @@
 			keyRight = $.Event('keyup');
 			keyRight.which = 39;
 			//highlight
-			input.val(!inputEmptied ? data.q : inputEmptiedValue).trigger(keyRight).get(0).style.background = inputBG;
+			var val = null;
+			if(!inputEmptied){
+				val = typeof data.q === 'undefined' ? inputEmptiedValue : data.q
+			}
+			else{
+				val = inputEmptiedValue;
+			}
+
+			input.val(val).trigger(keyRight).get(0).style.background = inputBG;
 
 			if (items.length > 0) {
 				$('.no-results', chosen).hide();
