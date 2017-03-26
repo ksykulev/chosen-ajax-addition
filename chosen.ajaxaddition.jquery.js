@@ -214,6 +214,7 @@
 			if ($.trim(q).length < minLength) {
 				input.get(0).style.background = inputBG;
         		$('option', select).remove();
+				select.trigger("chosen:updated");
 				if (throttle) { clearTimeout(throttle); }
 				return false;
 			}
