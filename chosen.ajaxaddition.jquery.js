@@ -213,7 +213,10 @@
 			//backout if nothing is in input box
 			if ($.trim(q).length < minLength) {
 				input.get(0).style.background = inputBG;
-        		$('option', select).remove();
+				var selected = $('option:selected', select).not(':empty').clone().attr('selected', true);
+				$('option', select).remove();
+
+				selected.appendTo(select);
 				select.trigger("chosen:updated");
 				if (throttle) { clearTimeout(throttle); }
 				return false;
