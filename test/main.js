@@ -1032,7 +1032,7 @@ describe('chosen.ajaxaddition', function(){
 		//select the item that is returned
 		$('.active-result', chosen).trigger('mouseup');
 		expect($('select', space).val()).to.equal(selectedId);
-		expect($('> a.chosen-single', chosen).text()).to.equal(selectedText);
+		expect($('> a.chosen-single span', chosen).text()).to.equal(selectedText);
 
 		//go for the second request..
 		chosen.trigger('click');
@@ -1052,7 +1052,7 @@ describe('chosen.ajaxaddition', function(){
 
 		//ensure what was selected, stays selected
 		expect($('select', space).val()).to.equal(selectedId);
-		expect($('> a.chosen-single', chosen).text()).to.equal(selectedText);
+		expect($('> a.chosen-single span', chosen).text()).to.equal(selectedText);
 
 		clock.restore();
 		xhr.restore();
