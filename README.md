@@ -127,7 +127,7 @@ Vendor
 
 [chosen](https://github.com/harvesthq/chosen) - base plugin
 
-[mocha](http://visionmedia.github.com/mocha/) - test framework
+[mocha](https://mochajs.org/) - test framework
 
 [chai](http://chaijs.com/) - browser expectations for mocha
 
